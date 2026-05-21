@@ -285,3 +285,39 @@ CREATE TABLE asset_storage (
     INDEX idx_storage_type (storage_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产入库表';
 
+-- 资产调拨表
+DROP TABLE IF EXISTS asset_transfer;
+CREATE TABLE asset_transfer (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    transfer_code VARCHAR(50) NOT NULL UNIQUE COMMENT '调拨单号',
+    asset_id BIGINT NOT NULL COMMENT '资产 ID',
+    asset_code VARCHAR(50) COMMENT '资产编码（冗余）',
+    asset_name VARCHAR(100) COMMENT '资产名称（冗余）',
+    from_department_id BIGINT COMMENT '调出部门 ID',
+    from_department_name VARCHAR(100) COMMENT '调出部门名称（冗余）',
+    to_department_id BIGINT COMMENT '调入部门 ID',
+    to_department_name VARCHAR(100) COMMENT '调入部门名称（冗余）',
+    transfer_reason VARCHAR(500) COMMENT '调拨原因',
+    transfer_type TINYINT DEFAULT 1 COMMENT '调拨类型：1-部门间调拨，2-人员变更，3-位置变更',
+    applicant_id BIGINT COMMENT '申请人 ID',
+    applicant_name VARCHAR(50) COMMENT '申请人姓名（冗余）',
+    apply_time DATETIME COMMENT '申请时间',
+    approver_id BIGINT COMMENT '审批人 ID',
+    approver_name VARCHAR(50) COMMENT '审批人姓名（冗余）',
+    approve_time DATETIME COMMENT '审批时间',
+    approve_status TINYINT DEFAULT 0 COMMENT '审批状态：0-待审批，1-已通过，2-已拒绝',
+    approve_remark VARCHAR(500) COMMENT '审批意见',
+    transfer_status TINYINT DEFAULT 0 COMMENT '调拨状态：0-待调拨，1-调拨中，2-已完成，3-已取消',
+    complete_time DATETIME COMMENT '完成时间',
+    remark VARCHAR(500) COMMENT '备注',
+    create_by BIGINT COMMENT '创建人 ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by BIGINT COMMENT '更新人 ID',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_transfer_code (transfer_code),
+    INDEX idx_asset_id (asset_id),
+    INDEX idx_approve_status (approve_status),
+    INDEX idx_transfer_status (transfer_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产调拨表';
+
