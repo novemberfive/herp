@@ -92,8 +92,26 @@ const routes = [
       {
         path: 'management/transfer',
         name: 'TransferList',
-        component: () => import('@/views/management/TransferList.vue'),
+        component: () => import('@/views/transfer/TransferList.vue'),
         meta: { title: '资产调拨' }
+      },
+      {
+        path: 'transfers/create',
+        name: 'TransferCreate',
+        component: () => import('@/views/transfer/TransferForm.vue'),
+        meta: { title: '新增调拨' }
+      },
+      {
+        path: 'transfers/:id/edit',
+        name: 'TransferEdit',
+        component: () => import('@/views/transfer/TransferForm.vue'),
+        meta: { title: '编辑调拨' }
+      },
+      {
+        path: 'transfers/:id/detail',
+        name: 'TransferDetail',
+        component: () => import('@/views/transfer/TransferDetail.vue'),
+        meta: { title: '调拨详情' }
       },
       {
         path: 'management/borrow',
