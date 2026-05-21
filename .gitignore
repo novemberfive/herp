@@ -1,1 +1,60 @@
-Nothing needs to be added to .gitignore since the only change is adding a markdown file (.md), which is a source/config file and should not be ignored.
+```
+# Compiled and build artifacts
+*.class
+*.o
+*.obj
+*.out
+target/
+build/
+
+# Dependencies
+node_modules/
+**/node_modules/
+.mypy_cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Maven/Gradle
+.mvn/
+.gradle/
+!asset-management/backend/.mvn/wrapper/**
+!asset-management/backend/.mvn/jvm.config
+
+# Node related
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite build output
+dist/
+
+# Java specific
+*.jar
+*.war
+*.ear
+```
