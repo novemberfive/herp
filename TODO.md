@@ -64,6 +64,12 @@
   - Entity: AssetCard
   - Mapper: AssetCardMapper
   - 前端：AssetList.vue (列表展示)
+- ✅ 维修记录管理 (完整 CRUD + 维修流程) 🔴 P0
+  - Entity: AssetMaintenance
+  - Mapper: AssetMaintenanceMapper
+  - Service: AssetMaintenanceService + AssetMaintenanceServiceImpl
+  - Controller: AssetMaintenanceController
+  - 前端：MaintenanceList.vue (完整实现)
 
 ### 6. 数据库表
 - ✅ sys_user - 用户表
@@ -74,6 +80,8 @@
 - ✅ asset_acceptance - 验收登记表
 - ✅ asset_storage - 资产入库表
 - ✅ asset_requisition - 资产领用退库表
+- ✅ asset_transfer - 资产调拨表
+- ✅ asset_maintenance - 资产维修记录表
 
 ---
 
@@ -152,11 +160,12 @@
   - 前端：TransferList.vue, TransferForm.vue, TransferDetail.vue 完整实现
   - 数据库：asset_transfer 表已创建
   
-- [ ] **资产维修** - 维护资产状态记录
-  - 状态：待开发
+- [x] **资产维修** - 维护资产状态记录 🔴 P0 ✅
+  - 状态：已完成 ✅
   - 说明：记录资产维修历史，维护资产状态
-  - 后端：需创建 AssetMaintenance 相关层
-  - 前端：MaintenanceList.vue 需完整实现
+  - 后端：AssetMaintenance Entity/Mapper/Service/Controller 完整实现
+  - 前端：MaintenanceList.vue 完整实现
+  - 数据库：asset_maintenance 表已创建
 
 ### 🟡 P1 - 重要功能 (下一迭代)
 - [ ] **资产盘点** - 定期资产清查功能
