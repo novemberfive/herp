@@ -1,0 +1,113 @@
+package com.asset.controller;
+
+import com.asset.dto.Result;
+import com.asset.entity.AssetTransfer;
+import com.asset.service.AssetTransferService;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+/**
+ * 资产调拨控制器
+ */
+@RestController
+@RequestMapping("/transfers")
+public class AssetTransferController {
+
+    private final AssetTransferService assetTransferService;
+
+    public AssetTransferController(AssetTransferService assetTransferService) {
+        this.assetTransferService = assetTransferService;
+    }
+
+    /**
+     * 分页查询调拨列表
+     * GET /api/transfers/list?pageNum=1&pageSize=10&approveStatus=1&transferStatus=2
+     */
+    @GetMapping("/list")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    public Result<Map<String, Object>> getTransferList(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer approveStatus,
+            @RequestParam(required = false) Integer transferStatus) {
+        return assetTransferService.getTransferList(pageNum, pageSize, approveStatus, transferStatus);
+    }
+
+    /**
+     * 根据 ID 查询调拨详情
+     * GET /api/transfers/{id}
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    public Result<AssetTransfer> getTransferById(@PathVariable Long id) {
+        return assetTransferService.getTransferById(id);
+    }
+
+    /**
+     * 创建调拨申请
+     * POST /api/transfers
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public Result<Void> createTransfer(@Valid @RequestBody AssetTransfer transfer) {
+        return assetTransferService.createTransfer(transfer);
+    }
+
+    /**
+     * 更新调拨信息
+     * PUT /api/transfers
+     */
+    @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public Result<Void> updateTransfer(@Valid @RequestBody AssetTransfer transfer) {
+        return assetTransferService.updateTransfer(transfer);
+    }
+
+    /**
+     * 删除调拨记录
+     * DELETE /api/transfers/{id}
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> deleteTransfer(@PathVariable Long id) {
+        return assetTransferService.deleteTransfer(id);
+    }
+
+    /**
+     * 审批调拨申请
+     * POST /api/transfers/{id}/approve
+     */
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> approveTransfer(
+            @PathVariable Long id,
+            @RequestParam Integer approveStatus,
+            @RequestParam(required = false) String approveRemark) {
+        // 从安全上下文中获取当前用户 ID（这里简化处理，实际应从 token 中获取）
+        Long approverId = 1L; // TODO: 从登录用户获取
+        return assetTransferService.approveTransfer(id, approveStatus, approveRemark, approverId);
+    }
+
+    /**
+     * 完成调拨
+     * POST /api/transfers/{id}/complete
+     */
+    @PostMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public Result<Void> completeTransfer(@PathVariable Long id) {
+        return assetTransferService.completeTransfer(id);
+    }
+
+    /**
+     * 取消调拨
+     * POST /api/transfers/{id}/cancel
+     */
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public Result<Void> cancelTransfer(@PathVariable Long id) {
+        return assetTransferService.cancelTransfer(id);
+    }
+}
