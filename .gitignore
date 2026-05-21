@@ -4,26 +4,27 @@
 *.o
 *.obj
 *.out
-target/
-build/
+*.dll
+*.so
+*.a
+*.pyc
+__pycache__/
 
 # Dependencies
 node_modules/
-**/node_modules/
+venv/
+.venv/
+target/
+.gradle/
 .mypy_cache/
 .pytest_cache/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
-Thumbs.db
+dist/
+build/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
-*.swo
 
 # Environment
 .env
@@ -34,27 +35,36 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Coverage
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
 coverage/
 htmlcov/
 .coverage
 
-# Maven/Gradle
-.mvn/
-.gradle/
-!asset-management/backend/.mvn/wrapper/**
-!asset-management/backend/.mvn/jvm.config
-
-# Node related
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Vite build output
-dist/
-
-# Java specific
-*.jar
-*.war
-*.ear
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
