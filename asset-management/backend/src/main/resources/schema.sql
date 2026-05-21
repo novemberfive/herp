@@ -321,3 +321,51 @@ CREATE TABLE asset_transfer (
     INDEX idx_transfer_status (transfer_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产调拨表';
 
+-- 资产维修记录表
+DROP TABLE IF EXISTS asset_maintenance;
+CREATE TABLE asset_maintenance (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    maintenance_no VARCHAR(50) NOT NULL UNIQUE COMMENT '维修单号',
+    asset_id BIGINT NOT NULL COMMENT '资产 ID',
+    asset_code VARCHAR(50) COMMENT '资产编码（冗余）',
+    asset_name VARCHAR(100) COMMENT '资产名称（冗余）',
+    category_id BIGINT COMMENT '分类 ID',
+    category_name VARCHAR(100) COMMENT '分类名称',
+    department_id BIGINT COMMENT '使用部门 ID',
+    department_name VARCHAR(100) COMMENT '使用部门名称',
+    location_id BIGINT COMMENT '存放位置 ID',
+    location_name VARCHAR(100) COMMENT '存放位置名称',
+    maintenance_type TINYINT DEFAULT 1 COMMENT '维修类型：1-日常维修，2-大修，3-保养，4-巡检',
+    fault_description VARCHAR(500) COMMENT '故障描述',
+    fault_type TINYINT DEFAULT 0 COMMENT '故障类型：0-其他，1-硬件故障，2-软件故障，3-人为损坏，4-自然老化',
+    maintenance_method VARCHAR(500) COMMENT '维修方式',
+    maintenance_result TINYINT DEFAULT 0 COMMENT '维修结果：0-待维修，1-维修中，2-维修完成，3-无法修复',
+    maintenance_cost DECIMAL(10,2) COMMENT '维修费用',
+    start_date DATETIME COMMENT '维修开始日期',
+    end_date DATETIME COMMENT '维修结束日期',
+    maintainer_id BIGINT COMMENT '维修人 ID',
+    maintainer_name VARCHAR(50) COMMENT '维修人姓名',
+    maintenance_unit VARCHAR(100) COMMENT '维修单位（外部维修时填写）',
+    contact_person VARCHAR(50) COMMENT '联系人',
+    contact_phone VARCHAR(20) COMMENT '联系电话',
+    warranty_claim TINYINT DEFAULT 0 COMMENT '是否保修：0-否，1-是',
+    applicant_id BIGINT COMMENT '申请人 ID',
+    applicant_name VARCHAR(50) COMMENT '申请人姓名',
+    apply_time DATETIME COMMENT '申请时间',
+    approver_id BIGINT COMMENT '审批人 ID',
+    approver_name VARCHAR(50) COMMENT '审批人姓名',
+    approve_time DATETIME COMMENT '审批时间',
+    approve_status TINYINT DEFAULT 0 COMMENT '审批状态：0-待审批，1-已通过，2-已拒绝',
+    approve_remark VARCHAR(500) COMMENT '审批意见',
+    remark VARCHAR(500) COMMENT '备注',
+    create_by BIGINT COMMENT '创建人 ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by BIGINT COMMENT '更新人 ID',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_maintenance_no (maintenance_no),
+    INDEX idx_asset_id (asset_id),
+    INDEX idx_maintenance_result (maintenance_result),
+    INDEX idx_approve_status (approve_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产维修记录表';
+
