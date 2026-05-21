@@ -16,10 +16,92 @@
           <el-icon><House /></el-icon>
           <span>工作台</span>
         </el-menu-item>
-        <el-menu-item index="/assets">
-          <el-icon><List /></el-icon>
-          <span>资产管理</span>
-        </el-menu-item>
+        
+        <!-- 资产取得 -->
+        <el-sub-menu index="acquisition">
+          <template #title>
+            <el-icon><DocumentAdd /></el-icon>
+            <span>资产取得</span>
+          </template>
+          <el-menu-item index="/acquisition/purchase">采购申请</el-menu-item>
+          <el-menu-item index="/acquisition/acceptance">验收登记</el-menu-item>
+          <el-menu-item index="/acquisition/storage">资产入库</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 档案管理 -->
+        <el-sub-menu index="archive">
+          <template #title>
+            <el-icon><Folder /></el-icon>
+            <span>档案管理</span>
+          </template>
+          <el-menu-item index="/archive/attachment">附件管理</el-menu-item>
+          <el-menu-item index="/archive/change">变更记录</el-menu-item>
+          <el-menu-item index="/archive/maintenance">维修记录</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 资产管理 -->
+        <el-sub-menu index="management">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>资产管理</span>
+          </template>
+          <el-menu-item index="/management/requisition">领用退库</el-menu-item>
+          <el-menu-item index="/management/transfer">资产调拨</el-menu-item>
+          <el-menu-item index="/management/borrow">借用归还</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 资产处置 -->
+        <el-sub-menu index="disposal">
+          <template #title>
+            <el-icon><Delete /></el-icon>
+            <span>资产处置</span>
+          </template>
+          <el-menu-item index="/disposal/scrap">报废申请</el-menu-item>
+          <el-menu-item index="/disposal/approval">处置审批</el-menu-item>
+          <el-menu-item index="/disposal/sale">出售捐赠</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 资产盘点 -->
+        <el-sub-menu index="inventory">
+          <template #title>
+            <el-icon><List /></el-icon>
+            <span>资产盘点</span>
+          </template>
+          <el-menu-item index="/inventory/plan">盘点计划</el-menu-item>
+          <el-menu-item index="/inventory/task">盘点任务</el-menu-item>
+          <el-menu-item index="/inventory/result">盘点结果</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 资产门户 -->
+        <el-sub-menu index="portal">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>资产门户</span>
+          </template>
+          <el-menu-item index="/portal/my-assets">我的资产</el-menu-item>
+          <el-menu-item index="/portal/dept-assets">部门资产</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 资产报表 -->
+        <el-sub-menu index="report">
+          <template #title>
+            <el-icon><DataAnalysis /></el-icon>
+            <span>资产报表</span>
+          </template>
+          <el-menu-item index="/report/statistics">统计报表</el-menu-item>
+          <el-menu-item index="/report/depreciation">折旧报表</el-menu-item>
+          <el-menu-item index="/report/disposal">处置报表</el-menu-item>
+        </el-sub-menu>
+        
+        <!-- 基础信息 -->
+        <el-sub-menu index="basic">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>基础信息</span>
+          </template>
+          <el-menu-item index="/basic/category">资产分类</el-menu-item>
+          <el-menu-item index="/basic/location">存放位置</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
