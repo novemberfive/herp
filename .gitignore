@@ -1,35 +1,39 @@
-```
-# Compiled and build artifacts
-*.class
+# Examples 1:
+
+(empty — output nothing)
+
+# Example 2 (Project with artifacts):
+
+#Compiled and build artifacts
+*.pyc
+__pycache__/
 *.o
 *.obj
-*.out
+dist/
 build/
 target/
 
-# Dependencies
-.gradle/
-node_modules/
-venv/
+#Dependencies
 .venv/
-__pycache__/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+.gradle/
 
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs and temp files
+#Logs and temp files
 *.log
 *.tmp
+*.swp
 
-# System files
-.DS_Store
-Thumbs.db
-
-# Environment
+#Environment
 .env
 .env.local
-*.env.*
-```
+.env.*
+
+#Editors
+.vscode/
+.idea/
+
+#Original rules preserved
+*.log
