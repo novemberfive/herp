@@ -23,14 +23,14 @@
   - Mapper: AssetCategoryMapper
   - Service: AssetCategoryService + AssetCategoryServiceImpl
   - Controller: AssetCategoryController
-  - 前端：CategoryList.vue (placeholder，待完善)
+  - 前端：CategoryList.vue ✅ (已完成：树形表格、搜索、新增/编辑/删除、子分类管理)
   
 - ✅ 存放位置管理 (后端完整 CRUD + 树形查询)
   - Entity: AssetLocation
   - Mapper: AssetLocationMapper
   - Service: AssetLocationService + AssetLocationServiceImpl
   - Controller: AssetLocationController
-  - 前端：LocationList.vue (placeholder，待完善)
+  - 前端：LocationList.vue ✅ (已完成：树形表格、搜索、新增/编辑/删除、子位置管理)
 
 ### 3. 资产取得模块 (Acquisition)
 - ✅ 采购申请 (完整 CRUD + 审批流程)
@@ -265,6 +265,13 @@
   - 后端：InventoryTaskController, InventoryTaskService, InventoryTaskServiceImpl, InventoryTaskMapper, InventoryTask Entity
   - 前端：TaskList.vue 完整实现
   - 数据库：inventory_task 表已创建
+  
+- 2025-05-25: 完成资产分类和存放位置管理前端开发
+  - 新增 API：basic.js (包含分类和位置的 CRUD 接口)
+  - 前端：CategoryList.vue 完整实现 (树形表格、搜索、新增/编辑/删除、子分类管理)
+  - 前端：LocationList.vue 完整实现 (树形表格、搜索、新增/编辑/删除、子位置管理)
+  - 后端：AssetCategoryController/Service/Mapper 已存在
+  - 后端：AssetLocationController/Service/Mapper 已存在
   
 - 2024-xx-xx: 完成资产维修功能开发 (前后端)
   - 后端：Entity, Mapper, Service, Controller 完整实现
