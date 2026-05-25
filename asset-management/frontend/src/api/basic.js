@@ -103,3 +103,83 @@ export function deleteLocation(id) {
     method: 'delete'
   })
 }
+
+// ==================== 维保记录管理 ====================
+
+// 获取维保记录列表（分页）
+export function getMaintenanceList(params) {
+  return request({
+    url: '/maintenance/list',
+    method: 'get',
+    params
+  })
+}
+
+// 根据 ID 查询维保详情
+export function getMaintenanceById(id) {
+  return request({
+    url: `/maintenance/${id}`,
+    method: 'get'
+  })
+}
+
+// 创建维保申请
+export function createMaintenance(data) {
+  return request({
+    url: '/maintenance',
+    method: 'post',
+    data
+  })
+}
+
+// 更新维保信息
+export function updateMaintenance(data) {
+  return request({
+    url: '/maintenance',
+    method: 'put',
+    data
+  })
+}
+
+// 删除维保记录
+export function deleteMaintenance(id) {
+  return request({
+    url: `/maintenance/${id}`,
+    method: 'delete'
+  })
+}
+
+// 审批维保申请
+export function approveMaintenance(id, approveStatus, approveRemark, approverId) {
+  return request({
+    url: `/maintenance/${id}/approve`,
+    method: 'post',
+    params: { approveStatus, approveRemark, approverId }
+  })
+}
+
+// 开始维修
+export function startMaintenance(id, maintainerId, maintainerName) {
+  return request({
+    url: `/maintenance/${id}/start`,
+    method: 'post',
+    params: { maintainerId, maintainerName }
+  })
+}
+
+// 完成维修
+export function completeMaintenance(id, maintenanceResult, maintenanceMethod, maintenanceCost) {
+  return request({
+    url: `/maintenance/${id}/complete`,
+    method: 'post',
+    params: { maintenanceResult, maintenanceMethod, maintenanceCost }
+  })
+}
+
+// 取消维修
+export function cancelMaintenance(id) {
+  return request({
+    url: `/maintenance/${id}/cancel`,
+    method: 'post'
+  })
+}

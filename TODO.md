@@ -74,7 +74,7 @@
   - Mapper: AssetMaintenanceMapper
   - Service: AssetMaintenanceService + AssetMaintenanceServiceImpl
   - Controller: AssetMaintenanceController
-  - 前端：MaintenanceList.vue (placeholder，待完善)
+  - 前端：MaintenanceList.vue ✅ (已完成：列表查询、新增/编辑申请、审批、开始维修、完成维修、删除)
 
 ### 5. 资产档案模块 (Archive)
 - ✅ 资产卡片管理 (完整 CRUD)
@@ -186,7 +186,7 @@
 - [x] **资产维修** - 维护资产状态记录
   - 状态：已完成 ✅
   - 后端：AssetMaintenanceController, AssetMaintenanceService, AssetMaintenanceMapper, AssetMaintenance Entity
-  - 前端：MaintenanceList.vue (placeholder，需完善)
+  - 前端：MaintenanceList.vue (完整实现：列表查询、新增/编辑申请、审批、开始维修、完成维修、删除)
   - 数据库：asset_maintenance 表已创建
 
 ### 🟡 P1 - 重要功能 (下一迭代)
@@ -249,18 +249,30 @@
 
 ## 当前进度
 - **总功能点**: 24 个
-- **已完成**: 14 个
-  - 基础信息：资产分类、存放位置 (后端完成，前端 placeholder) (2)
+- **已完成**: 15 个
+  - 基础信息：资产分类、存放位置 (后端完成，前端完整实现) (2)
   - 资产取得：采购申请、验收登记、资产入库 (3)
   - 资产管理：领用退库、资产调拨、资产维修 (3)
   - 资产档案：资产卡片 (1)
   - 资产盘点：盘点任务 (后端 + 前端完成) (1)
   - 核心基础：用户认证、Dashboard (2)
   - 前端完整实现额外功能：调拨相关页面 (TransferList/Form/Detail) (2)
-- **待开发**: 10 个
-- **完成率**: 约 58%
+  - 维保记录管理：MaintenanceList.vue 完整实现 (1)
+- **待开发**: 9 个
+- **完成率**: 约 63%
 
 ## 最近更新
+- 2025-05-25: 完成维保记录管理功能开发 (前端)
+  - 新增 API：basic.js 中增加维保记录相关接口 (getMaintenanceList, getMaintenanceById, createMaintenance, updateMaintenance, deleteMaintenance, approveMaintenance, startMaintenance, completeMaintenance, cancelMaintenance)
+  - 前端：MaintenanceList.vue 完整实现
+    - 列表查询：支持按资产编码、资产名称、维修结果、审批状态筛选
+    - 新增/编辑维保申请：包含资产信息、维修类型、故障类型、故障描述等字段
+    - 审批流程：支持通过/拒绝审批，填写审批意见
+    - 维修执行：开始维修 (指定维修人)、完成维修 (填写维修方式、费用、结果)
+    - 详情查看：完整的维保记录信息展示
+    - 删除功能：带二次确认的删除操作
+  - 后端：AssetMaintenanceController/Service/Mapper 已存在
+  
 - 2024-xx-xx: 完成资产盘点任务功能开发 (前后端)
   - 后端：InventoryTaskController, InventoryTaskService, InventoryTaskServiceImpl, InventoryTaskMapper, InventoryTask Entity
   - 前端：TaskList.vue 完整实现
