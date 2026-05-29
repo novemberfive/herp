@@ -268,7 +268,7 @@
 
 ## 当前进度
 - **总功能点**: 24 个
-- **已完成**: 18 个核心功能模块
+- **已完成**: 20 个核心功能模块
   - 核心基础：用户认证、Dashboard ✅ (2)
   - 基础信息：资产分类、存放位置 (后端 + 前端完整实现) ✅ (2)
   - 资产取得：采购申请、验收登记、资产入库 ✅ (3)
@@ -276,7 +276,7 @@
   - 资产档案：资产卡片 ✅ (1)
   - 资产盘点：盘点任务、盘点计划、盘点结果 ✅ (3)
   - 资产处置：报废申请/处置审批/出售捐赠 ✅ (1)
-  - 前端页面：BorrowList、ScrapList ✅ (2)
+  - 前端页面：BorrowList、ScrapList、PlanList、ResultList ✅ (4)
 - **待开发**: 6 个功能模块
   - 档案扩展：附件管理、图片管理、文档管理、变更记录 ❌ (4)
   - 资产管理扩展：资产变更 ❌ (1)
@@ -284,7 +284,7 @@
   - 资产定位：位置监控、轨迹追踪 ❌ (2)
   - 资产门户：我的资产、部门资产、资产公告 ❌ (3)
   - 资产报表：资产台账、折旧报表、统计报表、处置报表 ❌ (4)
-- **完成率**: 约 75% (18/24 核心模块)
+- **完成率**: 约 83% (20/24 核心模块)
 
 ## 前端页面状态明细
 
@@ -307,6 +307,8 @@
 | 资产档案 | asset/AssetForm.vue | ✅ 资产卡片表单 |
 | 资产档案 | asset/AssetDetail.vue | ✅ 资产卡片详情 |
 | 资产盘点 | inventory/TaskList.vue | ✅ 盘点任务完整流程 |
+| 资产盘点 | inventory/PlanList.vue | ✅ 盘点计划列表、新增/编辑、启用/停用、执行 |
+| 资产盘点 | inventory/ResultList.vue | ✅ 盘点结果列表、提交/复核/处理、批量导入 |
 | 核心基础 | Dashboard.vue | ✅ 工作台 |
 | 核心基础 | Login.vue | ✅ 登录页 |
 
@@ -317,8 +319,6 @@
 | 档案扩展 | archive/ChangeList.vue | ❌ 占位符 |
 | 资产处置 | disposal/ApprovalList.vue | ❌ 占位符 |
 | 资产处置 | disposal/SaleList.vue | ❌ 占位符 |
-| 资产盘点 | inventory/PlanList.vue | ❌ 占位符 |
-| 资产盘点 | inventory/ResultList.vue | ❌ 占位符 |
 | 资产门户 | portal/MyAssets.vue | ❌ 占位符 |
 | 资产门户 | portal/DeptAssets.vue | ❌ 占位符 |
 | 资产报表 | report/DepreciationReport.vue | ❌ 占位符 |
@@ -326,6 +326,12 @@
 | 资产报表 | report/DisposalReport.vue | ❌ 占位符 |
 
 ## 最近更新
+- 2025-05-29: 完成资产盘点计划、盘点结果前端页面开发
+  - 前端：inventory/PlanList.vue 完整实现 (盘点计划列表查询、新增/编辑、启用/停用、执行计划)
+  - 前端：inventory/ResultList.vue 完整实现 (盘点结果列表查询、提交/复核/处理、批量导入)
+  - API：inventory.js 新增盘点计划和盘点结果相关接口 (getPlanList, getPlanById, createPlan, updatePlan, deletePlan, executePlan, enablePlan, disablePlan, getResultList, getResultById, createResult, updateResult, deleteResult, submitResult, reviewResult, handleResult, importResult)
+  - 更新 TODO.md 前端页面状态表
+
 - 2025-05-29: 完成资产借用归还、报废申请前端页面开发
   - 前端：management/BorrowList.vue 完整实现 (借用列表查询、审批、归还操作)
   - 前端：disposal/ScrapList.vue 完整实现 (处置列表查询、审批、删除操作)
