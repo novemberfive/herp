@@ -120,20 +120,22 @@
   - 前端：ChangeList.vue (placeholder)
 
 ### 二、资产管理模块 (Management) - 待扩展
-- [ ] **资产借用/归还** - 借用管理
-  - 前端：BorrowList.vue (placeholder)
-  - 后端：需创建完整功能
+- [x] **资产借用/归还** - 借用管理 ✅ (后端完成)
+  - 前端：BorrowList.vue (placeholder，待开发)
+  - 后端：AssetBorrowController/Service/Mapper/Entity 完整实现
+    - 功能：CRUD + 审批/归还/取消/逾期提醒
+    - API: /api/asset/borrow/* (8 个接口)
+  - 数据库：asset_borrow 表已创建
 - [ ] **资产变更** - 资产信息变更
   - 需创建完整流程
 
 ### 三、资产处置模块 (Disposal)
-- [ ] **报废申请** - 资产报废申请
-  - 前端：ScrapList.vue (placeholder)
-  - 后端：需创建 Entity/Service/Controller
-- [ ] **处置审批** - 处置审批流程
-  - 前端：ApprovalList.vue (placeholder)
-- [ ] **资产出售/捐赠** - 处置方式
-  - 前端：SaleList.vue (placeholder)
+- [x] **报废申请/处置审批/出售捐赠** - 资产处置全流程 ✅ (后端完成)
+  - 前端：ScrapList.vue, ApprovalList.vue, SaleList.vue (placeholder，待开发)
+  - 后端：AssetDisposalController/Service/Mapper/Entity 完整实现
+    - 功能：CRUD + 审批/执行/完成/取消
+    - API: /api/asset/disposal/* (8 个接口)
+  - 数据库：asset_disposal 表已创建
 - [ ] **残值回收** - 处置收益管理
 
 ### 四、资产定位模块 (Location Tracking)
@@ -145,11 +147,18 @@
   - 前端：TaskList.vue (已完整实现)
   - 后端：InventoryTaskController/Service/Mapper/Entity 完整实现
   - 数据库：inventory_task 表已创建
-- [ ] **盘点计划** - 盘点计划创建
-  - 前端：PlanList.vue (placeholder)
-  - 后端：需创建完整功能
-- [ ] **盘点结果** - 盘盈盘亏处理
-  - 前端：ResultList.vue (placeholder)
+- [x] **盘点计划** - 盘点计划创建 ✅ (后端完成)
+  - 前端：PlanList.vue (placeholder，待开发)
+  - 后端：InventoryPlanController/Service/Mapper/Entity 完整实现
+    - 功能：CRUD + 启用/停用/执行计划
+    - API: /api/inventory/plan/* (7 个接口)
+  - 数据库：inventory_plan 表已创建
+- [x] **盘点结果** - 盘盈盘亏处理 ✅ (后端完成)
+  - 前端：ResultList.vue (placeholder，待开发)
+  - 后端：InventoryResultController/Service/Mapper/Entity 完整实现
+    - 功能：CRUD + 提交/复核/处理 + 批量导入
+    - API: /api/inventory/result/* (9 个接口)
+  - 数据库：inventory_result 表已创建
 
 ### 六、资产门户模块 (Portal)
 - [ ] **我的资产** - 个人名下资产查看
@@ -195,11 +204,21 @@
   - 后端：InventoryTaskController, InventoryTaskService, InventoryTaskMapper, InventoryTask Entity
   - 前端：TaskList.vue 完整实现
   - 数据库：inventory_task 表已创建
-- [ ] **资产盘点计划/结果** - 盘点全流程
-  - 优先级：盘点计划 > 盘点结果
-- [ ] **资产处置** - 资产生命周期结束管理
-  - 优先级：报废申请 > 处置审批 > 残值回收
-- [ ] **资产借用/归还** - 日常借用管理
+- [x] **资产盘点计划/结果** - 盘点全流程 ✅ (后端完成)
+  - 状态：后端已完成，前端待开发
+  - 后端：InventoryPlanController/Service, InventoryResultController/Service 完整实现
+  - 前端：PlanList.vue, ResultList.vue (待开发)
+  - 数据库：inventory_plan, inventory_result 表已创建
+- [x] **资产处置** - 资产生命周期结束管理 ✅ (后端完成)
+  - 状态：后端已完成，前端待开发
+  - 后端：AssetDisposalController/Service 完整实现 (报废/出售/捐赠)
+  - 前端：ScrapList.vue, ApprovalList.vue, SaleList.vue (待开发)
+  - 数据库：asset_disposal 表已创建
+- [x] **资产借用/归还** - 日常借用管理 ✅ (后端完成)
+  - 状态：后端已完成，前端待开发
+  - 后端：AssetBorrowController/Service 完整实现
+  - 前端：BorrowList.vue (待开发)
+  - 数据库：asset_borrow 表已创建
 
 ### 🟢 P2 - 辅助功能 (后续迭代)
 - [ ] **报表统计** - 数据分析决策支持
@@ -249,19 +268,81 @@
 
 ## 当前进度
 - **总功能点**: 24 个
-- **已完成**: 15 个
-  - 基础信息：资产分类、存放位置 (后端完成，前端完整实现) (2)
-  - 资产取得：采购申请、验收登记、资产入库 (3)
-  - 资产管理：领用退库、资产调拨、资产维修 (3)
-  - 资产档案：资产卡片 (1)
-  - 资产盘点：盘点任务 (后端 + 前端完成) (1)
-  - 核心基础：用户认证、Dashboard (2)
-  - 前端完整实现额外功能：调拨相关页面 (TransferList/Form/Detail) (2)
-  - 维保记录管理：MaintenanceList.vue 完整实现 (1)
-- **待开发**: 9 个
-- **完成率**: 约 63%
+- **已完成**: 16 个核心功能模块
+  - 核心基础：用户认证、Dashboard ✅ (2)
+  - 基础信息：资产分类、存放位置 (后端 + 前端完整实现) ✅ (2)
+  - 资产取得：采购申请、验收登记、资产入库 ✅ (3)
+  - 资产管理：领用退库、资产调拨、资产维修、资产借用 ✅ (4)
+  - 资产档案：资产卡片 ✅ (1)
+  - 资产盘点：盘点任务、盘点计划、盘点结果 ✅ (3)
+  - 资产处置：报废申请/处置审批/出售捐赠 ✅ (1)
+- **待开发**: 8 个功能模块
+  - 档案扩展：附件管理、图片管理、文档管理、变更记录 ❌ (4)
+  - 资产管理扩展：资产变更 ❌ (1)
+  - 资产处置扩展：残值回收 ❌ (1)
+  - 资产定位：位置监控、轨迹追踪 ❌ (2)
+  - 资产门户：我的资产、部门资产、资产公告 ❌ (3)
+  - 资产报表：资产台账、折旧报表、统计报表、处置报表 ❌ (4)
+- **完成率**: 约 67% (16/24 核心模块)
+
+## 前端页面状态明细
+
+### ✅ 已完整实现的页面
+| 模块 | 页面文件 | 状态 |
+|------|---------|------|
+| 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
+| 基础信息 | LocationList.vue | ✅ 树形表格、CRUD、子位置管理 |
+| 资产取得 | PurchaseList.vue | ✅ 采购申请完整流程 |
+| 资产取得 | AcceptanceList.vue | ✅ 验收登记完整流程 |
+| 资产取得 | StorageList.vue | ✅ 资产入库完整流程 |
+| 资产管理 | RequisitionList.vue | ✅ 领用退库完整流程 |
+| 资产管理 | transfer/TransferList.vue | ✅ 调拨列表 |
+| 资产管理 | transfer/TransferForm.vue | ✅ 调拨申请表单 |
+| 资产管理 | transfer/TransferDetail.vue | ✅ 调拨详情 |
+| 资产管理 | archive/MaintenanceList.vue | ✅ 维修申请、审批、执行完整流程 |
+| 资产档案 | asset/AssetList.vue | ✅ 资产卡片列表 |
+| 资产档案 | asset/AssetForm.vue | ✅ 资产卡片表单 |
+| 资产档案 | asset/AssetDetail.vue | ✅ 资产卡片详情 |
+| 资产盘点 | inventory/TaskList.vue | ✅ 盘点任务完整流程 |
+| 核心基础 | Dashboard.vue | ✅ 工作台 |
+| 核心基础 | Login.vue | ✅ 登录页 |
+
+### ❌ 待开发的占位符页面
+| 模块 | 页面文件 | 状态 |
+|------|---------|------|
+| 档案扩展 | archive/AttachmentList.vue | ❌ 占位符 |
+| 档案扩展 | archive/ChangeList.vue | ❌ 占位符 |
+| 资产管理 | management/BorrowList.vue | ❌ 占位符 |
+| 资产处置 | disposal/ScrapList.vue | ❌ 占位符 |
+| 资产处置 | disposal/ApprovalList.vue | ❌ 占位符 |
+| 资产处置 | disposal/SaleList.vue | ❌ 占位符 |
+| 资产盘点 | inventory/PlanList.vue | ❌ 占位符 |
+| 资产盘点 | inventory/ResultList.vue | ❌ 占位符 |
+| 资产门户 | portal/MyAssets.vue | ❌ 占位符 |
+| 资产门户 | portal/DeptAssets.vue | ❌ 占位符 |
+| 资产报表 | report/DepreciationReport.vue | ❌ 占位符 |
+| 资产报表 | report/StatisticsReport.vue | ❌ 占位符 |
+| 资产报表 | report/DisposalReport.vue | ❌ 占位符 |
 
 ## 最近更新
+- 2025-05-29: 完成资产盘点计划、资产处置、资产借用功能开发 (后端)
+  - 新增后端服务实现：
+    - InventoryPlanServiceImpl: 盘点计划 CRUD + 启用/停用/执行
+    - InventoryResultServiceImpl: 盘点结果 CRUD + 提交/复核/处理 + 批量导入
+    - AssetDisposalServiceImpl: 资产处置 CRUD + 审批/执行/完成/取消
+    - AssetBorrowServiceImpl: 资产借用 CRUD + 审批/归还/取消/逾期提醒
+  - 新增后端控制器：
+    - InventoryPlanController: /api/inventory/plan/* (7 个接口)
+    - InventoryResultController: /api/inventory/result/* (9 个接口)
+    - AssetDisposalController: /api/asset/disposal/* (8 个接口)
+    - AssetBorrowController: /api/asset/borrow/* (8 个接口)
+  - 数据库表已存在：inventory_plan, inventory_result, asset_disposal, asset_borrow
+
+- 2025-05-29: 更新项目进度分析
+  - 确认前端完整实现页面共 16 个
+  - 确认占位符页面共 13 个
+  - 后端 Controller 共 15 个，Entity 共 15 个
+  
 - 2025-05-25: 完成维保记录管理功能开发 (前端)
   - 新增 API：basic.js 中增加维保记录相关接口 (getMaintenanceList, getMaintenanceById, createMaintenance, updateMaintenance, deleteMaintenance, approveMaintenance, startMaintenance, completeMaintenance, cancelMaintenance)
   - 前端：MaintenanceList.vue 完整实现
@@ -287,8 +368,8 @@
   
 - 2024-xx-xx: 完成资产维修功能开发 (前后端)
   - 后端：Entity, Mapper, Service, Controller 完整实现
-  - 前端：MaintenanceList.vue (placeholder，需完善)
-  - 数据库：asset_maintenance 表已添加到 schema.sql
+  - 前端：archive/MaintenanceList.vue 完整实现 (维修申请、审批、执行全流程)
+  - 数据库：asset_maintenance 表已创建
   
 - 2024-xx-xx: 完成资产调拨功能开发 (前后端)
   - 后端：Entity, Mapper, Service, Controller 完整实现
