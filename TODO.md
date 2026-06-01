@@ -276,10 +276,13 @@
 
 ### 🔴 P1 - 高优先级 (建议下一迭代完成)
 
-1. **修复资产管理模块占位符页面** (1 个页面)
-   - `management/TransferList.vue` - 替换为实际调拨功能页面
-     - 现状：该文件是占位符，但完整的调拨功能已在 `transfer/` 目录下实现
-     - 建议：删除或重定向到 `transfer/TransferList.vue`
+1. **完善部分功能页面中的 TODO 项** (2 个页面)
+   - `acquisition/PurchaseList.vue` - 实现"新建申请"按钮功能
+     - 现状：点击提示"新建申请功能待实现"
+     - 建议：创建 PurchaseForm.vue 表单组件或对话框，实现采购申请的新建/编辑功能
+   - `inventory/TaskList.vue` - 实现"新建任务"和"查看详情"按钮功能
+     - 现状：点击分别提示"创建任务功能待实现"和"查看详情功能待实现"
+     - 建议：创建 TaskForm.vue 表单组件和 TaskDetail.vue 详情组件
 
 ### 🟡 P2 - 中优先级 (后续迭代)
 
@@ -379,9 +382,11 @@
 
 **前端页面状态**:
 
-- ✅ 已完整实现：24 个页面
+- ✅ 已完整实现：22 个页面
 
-- ❌ 占位符页面：6 个页面 (MyAssets, DeptAssets, 报表类 3 个，management/TransferList)
+- ⚠️ 部分功能待完善：2 个页面 (PurchaseList, TaskList)
+
+- ❌ 占位符页面：5 个页面 (MyAssets, DeptAssets, 报表类 3 个)
 
 
 ## 前端页面状态明细
@@ -391,7 +396,7 @@
 |------|---------|------|
 | 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
 | 基础信息 | LocationList.vue | ✅ 树形表格、CRUD、子位置管理 |
-| 资产取得 | PurchaseList.vue | ✅ 采购申请完整流程 |
+| 资产取得 | PurchaseList.vue | ⚠️ 采购申请完整流程，但"新建申请"按钮待实现 |
 | 资产取得 | AcceptanceList.vue | ✅ 验收登记完整流程 |
 | 资产取得 | StorageList.vue | ✅ 资产入库完整流程 |
 | 资产管理 | RequisitionList.vue | ✅ 领用退库完整流程 |
@@ -406,25 +411,43 @@
 | 资产档案 | asset/AssetList.vue | ✅ 资产卡片列表 |
 | 资产档案 | asset/AssetForm.vue | ✅ 资产卡片表单 |
 | 资产档案 | asset/AssetDetail.vue | ✅ 资产卡片详情 |
-| 资产盘点 | inventory/TaskList.vue | ✅ 盘点任务完整流程 |
+| 资产盘点 | inventory/TaskList.vue | ⚠️ 盘点任务完整流程，但"新建任务"和"查看详情"按钮待实现 |
 | 资产盘点 | inventory/PlanList.vue | ✅ 盘点计划列表、新增/编辑、启用/停用、执行 |
 | 资产盘点 | inventory/ResultList.vue | ✅ 盘点结果列表、提交/复核/处理、批量导入 |
 | 核心基础 | Dashboard.vue | ✅ 工作台 |
 | 核心基础 | Login.vue | ✅ 登录页 |
-| 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (模拟 API) |
-| 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (模拟 API) |
+| 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (真实 API) |
+| 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (真实 API) |
 
 ### ❌ 待开发的占位符页面 (6 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
-| 资产管理 | management/TransferList.vue | ❌ 占位符 - 需使用 transfer 目录下的完整实现 |
 | 资产门户 | portal/MyAssets.vue | ❌ 占位符 - 待开发 |
 | 资产门户 | portal/DeptAssets.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/DepreciationReport.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/StatisticsReport.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/DisposalReport.vue | ❌ 占位符 - 待开发 |
 
+### ⚠️ 部分功能待完善的页面 (2 个)
+| 模块 | 页面文件 | 待实现功能 |
+|------|---------|-----------|
+| 资产取得 | acquisition/PurchaseList.vue | ⚠️ "新建申请"按钮功能待实现 (TODO 注释) |
+| 资产盘点 | inventory/TaskList.vue | ⚠️ "新建任务"和"查看详情"按钮功能待实现 (TODO 注释) |
+
 ## 最近更新
+
+### 2025-06-01: 项目进度分析与 TODO 文档更新 (第二次)
+- **检查结果**: 
+  - 发现 2 个页面包含 TODO 注释，需要完善功能
+  - 发现 5 个占位符页面待开发
+  - management/TransferList.vue 占位符问题已修复 (已删除)
+  - AttachmentList.vue 和 ChangeList.vue 已从模拟 API 迁移到真实 API
+- **更新内容**:
+  - 更新前端页面状态明细表，新增"部分功能待完善的页面"分类
+  - 标记 PurchaseList.vue 和 TaskList.vue 为⚠️部分完成状态
+  - 更新下一步开发建议，将 TODO 项完善列为 P1 优先级
+  - 移除 management/TransferList.vue 从占位符列表中
+  - 更新 AttachmentList 和 ChangeList 为使用真实 API
 
 ### 2025-06-01: 项目进度分析与 TODO 文档更新
 - **项目整体进度**: 89% (24/27 核心模块完成)
