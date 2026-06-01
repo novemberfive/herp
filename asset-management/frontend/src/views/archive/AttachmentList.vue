@@ -188,81 +188,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
-
-// 模拟 API 调用（实际项目中应替换为真实 API）
-const mockApi = {
-  getList: (params) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          code: 200,
-          data: {
-            records: [
-              {
-                id: 1,
-                assetId: 1001,
-                assetCode: 'ZC20240001',
-                assetName: '联想 ThinkPad X1',
-                attachmentName: '采购合同.pdf',
-                attachmentType: 1,
-                fileName: 'contract_2024.pdf',
-                fileUrl: '/files/contract_2024.pdf',
-                fileSize: 1024567,
-                uploadUser: '张三',
-                uploadTime: '2024-01-15 10:30:00',
-                remark: '采购合同原件扫描件'
-              },
-              {
-                id: 2,
-                assetId: 1002,
-                assetCode: 'ZC20240002',
-                assetName: 'HP 打印机',
-                attachmentName: '验收报告.docx',
-                attachmentType: 2,
-                fileName: 'acceptance_report.docx',
-                fileUrl: '/files/acceptance_report.docx',
-                fileSize: 524288,
-                uploadUser: '李四',
-                uploadTime: '2024-01-16 14:20:00',
-                remark: '设备验收报告'
-              },
-              {
-                id: 3,
-                assetId: 1001,
-                assetCode: 'ZC20240001',
-                assetName: '联想 ThinkPad X1',
-                attachmentName: '维修记录.pdf',
-                attachmentType: 3,
-                fileName: 'maintenance_record.pdf',
-                fileUrl: '/files/maintenance_record.pdf',
-                fileSize: 256000,
-                uploadUser: '王五',
-                uploadTime: '2024-02-10 09:15:00',
-                remark: '屏幕更换维修记录'
-              }
-            ],
-            total: 3
-          },
-          message: 'success'
-        })
-      }, 300)
-    })
-  },
-  create: (data) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ code: 200, message: '上传成功' })
-      }, 500)
-    })
-  },
-  delete: (id) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ code: 200, message: '删除成功' })
-      }, 300)
-    })
-  }
-}
+import { 
+  getAttachmentList, 
+  uploadAttachment, 
+  deleteAttachment, 
+  batchDeleteAttachments,
+  downloadAttachment 
+} from '@/api/archive'
 
 // 查询表单
 const queryForm = reactive({
@@ -358,7 +290,7 @@ const fetchData = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     }
-    const res = await mockApi.getList(params)
+    const res = await getAttachmentList(params)
     if (res.code === 200) {
       tableData.value = res.data.records
       pagination.total = res.data.total
@@ -453,7 +385,7 @@ const handleSubmit = async () => {
     
     submitting.value = true
     try {
-      // 这里应该使用真实的文件上传 API
+      // 使用真实的文件上传 API
       const uploadData = new FormData()
       uploadData.append('file', selectedFile.value)
       uploadData.append('assetId', formData.assetId)
@@ -462,7 +394,7 @@ const handleSubmit = async () => {
       uploadData.append('attachmentType', formData.attachmentType)
       uploadData.append('remark', formData.remark)
       
-      await mockApi.create(uploadData)
+      await uploadAttachment(uploadData)
       ElMessage.success('上传成功')
       dialogVisible.value = false
       fetchData()
@@ -480,10 +412,21 @@ const handleDialogClose = () => {
 }
 
 // 下载
-const handleDownload = (row) => {
-  ElMessage.info(`正在下载：${row.attachmentName}`)
-  // 实际项目中应实现真实的下载逻辑
-  // window.open(row.fileUrl, '_blank')
+const handleDownload = async (row) => {
+  try {
+    const response = await downloadAttachment(row.id)
+    // 创建下载链接
+    const blob = new Blob([response])
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = row.fileName
+    link.click()
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('下载成功')
+  } catch (error) {
+    ElMessage.error('下载失败')
+  }
 }
 
 // 预览
@@ -505,7 +448,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await mockApi.delete(row.id)
+      await deleteAttachment(row.id)
       ElMessage.success('删除成功')
       fetchData()
     } catch (error) {
@@ -522,9 +465,8 @@ const handleBatchDelete = () => {
     type: 'warning'
   }).then(async () => {
     try {
-      for (const row of selectedRows.value) {
-        await mockApi.delete(row.id)
-      }
+      const ids = selectedRows.value.map(row => row.id)
+      await batchDeleteAttachments(ids)
       ElMessage.success('批量删除成功')
       selectedRows.value = []
       fetchData()
