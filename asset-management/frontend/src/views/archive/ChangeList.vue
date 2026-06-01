@@ -191,95 +191,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Download } from '@element-plus/icons-vue'
-
-// 模拟 API 调用（实际项目中应替换为真实 API）
-const mockApi = {
-  getList: (params) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          code: 200,
-          data: {
-            records: [
-              {
-                id: 1,
-                assetId: 1001,
-                assetCode: 'ZC20240001',
-                assetName: '联想 ThinkPad X1',
-                changeType: 2,
-                changeField: 'departmentName',
-                beforeValue: '技术部',
-                afterValue: '产品部',
-                changeReason: '部门调整，资产划转',
-                operatorName: '张三',
-                operateTime: '2024-01-20 10:30:00',
-                remark: '年度部门重组'
-              },
-              {
-                id: 2,
-                assetId: 1002,
-                assetCode: 'ZC20240002',
-                assetName: 'HP 打印机',
-                changeType: 3,
-                changeField: 'locationName',
-                beforeValue: 'A 栋 301',
-                afterValue: 'B 栋 205',
-                changeReason: '办公室搬迁',
-                operatorName: '李四',
-                operateTime: '2024-02-15 14:20:00',
-                remark: ''
-              },
-              {
-                id: 3,
-                assetId: 1001,
-                assetCode: 'ZC20240001',
-                assetName: '联想 ThinkPad X1',
-                changeType: 4,
-                changeField: 'userName',
-                beforeValue: '王五',
-                afterValue: '赵六',
-                changeReason: '员工离职交接',
-                operatorName: '张三',
-                operateTime: '2024-03-01 09:15:00',
-                remark: '工作交接完成'
-              },
-              {
-                id: 4,
-                assetId: 1003,
-                assetCode: 'ZC20240003',
-                assetName: '戴尔显示器',
-                changeType: 1,
-                changeField: 'assetName',
-                beforeValue: '戴尔显示器 24 寸',
-                afterValue: '戴尔 P2419H 显示器',
-                changeReason: '完善资产名称信息',
-                operatorName: '管理员',
-                operateTime: '2024-03-10 11:00:00',
-                remark: '资产信息规范化'
-              }
-            ],
-            total: 4
-          },
-          message: 'success'
-        })
-      }, 300)
-    })
-  },
-  create: (data) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ code: 200, message: '创建成功' })
-      }, 500)
-    })
-  },
-  delete: (id) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ code: 200, message: '删除成功' })
-      }, 300)
-    })
-  }
-}
+import { 
+  getChangeList, 
+  createChange, 
+  deleteChange, 
+  batchDeleteChanges,
+  exportChanges 
+} from '@/api/archive'
 
 // 查询表单
 const queryForm = reactive({
@@ -349,7 +267,7 @@ const fetchData = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     }
-    const res = await mockApi.getList(params)
+    const res = await getChangeList(params)
     if (res.code === 200) {
       tableData.value = res.data.records
       pagination.total = res.data.total
@@ -431,7 +349,7 @@ const handleSubmit = async () => {
     
     submitting.value = true
     try {
-      await mockApi.create(formData)
+      await createChange(formData)
       ElMessage.success('创建成功')
       dialogVisible.value = false
       fetchData()
@@ -462,7 +380,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await mockApi.delete(row.id)
+      await deleteChange(row.id)
       ElMessage.success('删除成功')
       fetchData()
     } catch (error) {
@@ -472,13 +390,27 @@ const handleDelete = (row) => {
 }
 
 // 导出
-const handleExport = () => {
-  ElMessage.info('正在导出变更记录...')
-  // 实际项目中应实现真实的导出逻辑
-  // 可以导出为 Excel 或 CSV 格式
-  setTimeout(() => {
+const handleExport = async () => {
+  try {
+    ElMessage.info('正在导出变更记录...')
+    const params = {
+      ...queryForm,
+      pageNum: pagination.pageNum,
+      pageSize: pagination.pageSize
+    }
+    const response = await exportChanges(params)
+    // 创建下载链接
+    const blob = new Blob([response], { type: 'application/vnd.ms-excel' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `变更记录_${new Date().getTime()}.xlsx`
+    link.click()
+    window.URL.revokeObjectURL(url)
     ElMessage.success('导出成功')
-  }, 1000)
+  } catch (error) {
+    ElMessage.error('导出失败')
+  }
 }
 
 // 初始化
