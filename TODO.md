@@ -111,27 +111,29 @@
 ## 待开发功能 📋
 
 ### 一、档案扩展模块 (Archive Extension)
-- [ ] **附件管理** - 资产相关附件上传下载
-  - 前端：AttachmentList.vue (placeholder)
-  - 后端：需创建 Entity/Service/Controller
+- [x] **附件管理** - 资产相关附件上传下载 ✅ (前端完成，模拟 API)
+  - 前端：AttachmentList.vue (已完整实现：附件列表、上传、下载、预览、删除、批量操作)
 - [ ] **图片管理** - 资产图片管理
 - [ ] **文档管理** - 资产相关文档管理
-- [ ] **变更记录** - 资产变更历史记录
-  - 前端：ChangeList.vue (placeholder)
+- [x] **变更记录** - 资产变更历史记录 ✅ (前端完成，模拟 API)
+  - 前端：ChangeList.vue (已完整实现：变更记录列表、新增、详情、导出)
 
 ### 二、资产管理模块 (Management) - 待扩展
-- [x] **资产借用/归还** - 借用管理 ✅ (后端完成)
-  - 前端：BorrowList.vue (placeholder，待开发)
+- [x] **资产借用/归还** - 借用管理 ✅ (前后端完成)
+  - 前端：BorrowList.vue (已完整实现：借用列表查询、审批、归还操作)
   - 后端：AssetBorrowController/Service/Mapper/Entity 完整实现
     - 功能：CRUD + 审批/归还/取消/逾期提醒
     - API: /api/asset/borrow/* (8 个接口)
   - 数据库：asset_borrow 表已创建
 - [ ] **资产变更** - 资产信息变更
   - 需创建完整流程
+- [x] **资产调拨** - 部门间资产调拨 ✅ (前后端完成)
+  - 前端：transfer/TransferList.vue, TransferForm.vue, TransferDetail.vue (已完整实现)
+  - 注意：management/TransferList.vue 是占位符，应使用 transfer 目录下的实现
 
 ### 三、资产处置模块 (Disposal)
-- [x] **报废申请/处置审批/出售捐赠** - 资产处置全流程 ✅ (后端完成)
-  - 前端：ScrapList.vue, ApprovalList.vue, SaleList.vue (placeholder，待开发)
+- [x] **报废申请/处置审批/出售捐赠** - 资产处置全流程 ✅ (前后端完成)
+  - 前端：ScrapList.vue, ApprovalList.vue, SaleList.vue (已完整实现)
   - 后端：AssetDisposalController/Service/Mapper/Entity 完整实现
     - 功能：CRUD + 审批/执行/完成/取消
     - API: /api/asset/disposal/* (8 个接口)
@@ -143,18 +145,18 @@
 - [ ] **轨迹追踪** - 资产移动历史记录
 
 ### 五、资产盘点模块 (Inventory)
-- [x] **盘点任务** - 盘点任务执行 ✅
+- [x] **盘点任务** - 盘点任务执行 ✅ (前后端完成)
   - 前端：TaskList.vue (已完整实现)
   - 后端：InventoryTaskController/Service/Mapper/Entity 完整实现
   - 数据库：inventory_task 表已创建
-- [x] **盘点计划** - 盘点计划创建 ✅ (后端完成)
-  - 前端：PlanList.vue (placeholder，待开发)
+- [x] **盘点计划** - 盘点计划创建 ✅ (前后端完成)
+  - 前端：PlanList.vue (已完整实现：列表查询、新增/编辑、启用/停用、执行计划)
   - 后端：InventoryPlanController/Service/Mapper/Entity 完整实现
     - 功能：CRUD + 启用/停用/执行计划
     - API: /api/inventory/plan/* (7 个接口)
   - 数据库：inventory_plan 表已创建
-- [x] **盘点结果** - 盘盈盘亏处理 ✅ (后端完成)
-  - 前端：ResultList.vue (placeholder，待开发)
+- [x] **盘点结果** - 盘盈盘亏处理 ✅ (前后端完成)
+  - 前端：ResultList.vue (已完整实现：列表查询、提交/复核/处理、批量导入)
   - 后端：InventoryResultController/Service/Mapper/Entity 完整实现
     - 功能：CRUD + 提交/复核/处理 + 批量导入
     - API: /api/inventory/result/* (9 个接口)
@@ -162,19 +164,19 @@
 
 ### 六、资产门户模块 (Portal)
 - [ ] **我的资产** - 个人名下资产查看
-  - 前端：MyAssets.vue (placeholder)
+  - 前端：MyAssets.vue (占位符，待开发)
 - [ ] **部门资产** - 部门资产视图
-  - 前端：DeptAssets.vue (placeholder)
+  - 前端：DeptAssets.vue (占位符，待开发)
 - [ ] **资产公告** - 资产管理相关通知
 
 ### 七、资产报表模块 (Report)
 - [ ] **资产台账** - 资产总览报表
 - [ ] **折旧报表** - 资产折旧明细
-  - 前端：DepreciationReport.vue (placeholder)
+  - 前端：DepreciationReport.vue (占位符，待开发)
 - [ ] **统计报表** - 多维度统计分析
-  - 前端：StatisticsReport.vue (placeholder)
+  - 前端：StatisticsReport.vue (占位符，待开发)
 - [ ] **处置报表** - 资产处置统计
-  - 前端：DisposalReport.vue (placeholder)
+  - 前端：DisposalReport.vue (占位符，待开发)
 
 ---
 
@@ -209,10 +211,10 @@
   - 后端：InventoryPlanController/Service, InventoryResultController/Service 完整实现
   - 前端：PlanList.vue, ResultList.vue (已完整实现)
   - 数据库：inventory_plan, inventory_result 表已创建
-- [ ] **资产处置** - 资产生命周期结束管理 (部分完成)
-  - 状态：后端已完成，前端部分完成 (ScrapList ✅, ApprovalList/SaleList ❌)
+- [x] **资产处置** - 资产生命周期结束管理 ✅
+  - 状态：前后端均已完成
   - 后端：AssetDisposalController/Service 完整实现 (报废/出售/捐赠)
-  - 前端：ScrapList.vue (已完成), ApprovalList.vue, SaleList.vue (待开发)
+  - 前端：ScrapList.vue, ApprovalList.vue, SaleList.vue (已完整实现)
   - 数据库：asset_disposal 表已创建
 - [x] **资产借用/归还** - 日常借用管理 ✅
   - 状态：已完成 ✅
@@ -225,8 +227,8 @@
   - 资产台账、折旧报表、统计报表、处置报表
 - [ ] **资产门户** - 用户体验提升
   - 我的资产、部门资产、资产公告
-- [ ] **附件管理** - 资产相关文件管理 (前后端均需开发)
-- [ ] **变更记录** - 资产变更历史记录 (前后端均需开发)
+- [x] **附件管理** - 资产相关文件管理 ✅ (前端完成，模拟 API)
+- [x] **变更记录** - 资产变更历史记录 ✅ (前端完成，模拟 API)
 - [ ] **资产定位** - 高级追踪功能 (前后端均需开发)
 - [ ] **资产变更** - 资产信息变更流程 (前后端均需开发)
 - [ ] **残值回收** - 处置收益管理 (前后端均需开发)
@@ -270,56 +272,72 @@
 
 ## 下一步开发建议
 
-基于当前项目进度 (83% 完成率)，建议按以下优先级继续开发:
+基于当前项目进度 (89% 完成率)，建议按以下优先级继续开发:
 
-### 🔴 P1 - 高优先级 (建议下一迭代完成) ✅ 全部完成
+### 🔴 P1 - 高优先级 (建议下一迭代完成)
 
-1. **完成资产处置模块前端页面** (2 个页面) ✅
-   - `disposal/ApprovalList.vue` - 处置审批列表页 ✅
-     - 功能：列表查询、审批通过/拒绝、执行处置、查看详情
-     - 后端接口已就绪：`/api/asset/disposal/approve`, `/api/asset/disposal/execute`
-   - `disposal/SaleList.vue` - 出售捐赠列表页 ✅
-     - 功能：列表查询、新建出售/捐赠申请、编辑、删除、详情查看
-     - 后端接口已就绪：`/api/asset/disposal/*`
+1. **修复资产管理模块占位符页面** (1 个页面)
+   - `management/TransferList.vue` - 替换为实际调拨功能页面
+     - 现状：该文件是占位符，但完整的调拨功能已在 `transfer/` 目录下实现
+     - 建议：删除或重定向到 `transfer/TransferList.vue`
 
 ### 🟡 P2 - 中优先级 (后续迭代)
 
-2. **档案扩展模块** (前后端均需开发)
-   - `archive/AttachmentList.vue` - 附件管理
-     - 需创建：Attachment Entity/Mapper/Service/Controller
-     - 功能：附件上传、下载、删除、关联资产
-   - `archive/ChangeList.vue` - 变更记录
-     - 需创建：AssetChange Entity/Mapper/Service/Controller
-     - 功能：记录资产变更历史、查询变更日志
-
-3. **资产门户模块** (前端开发为主)
+2. **资产门户模块** (前端开发为主，2 个页面)
    - `portal/MyAssets.vue` - 我的资产
      - 功能：查看个人名下资产列表、资产详情
      - 可复用现有 AssetCard 查询接口，增加按用户筛选
+     - 技术要点：使用当前登录用户 ID 过滤资产列表
    - `portal/DeptAssets.vue` - 部门资产
      - 功能：查看本部门资产列表、统计信息
      - 可复用现有 AssetCard 查询接口，增加按部门筛选
+     - 技术要点：使用当前用户所属部门 ID 过滤资产列表
+
+3. **资产报表模块** (需要复杂查询和图表展示，4 个页面)
+   - `report/DepreciationReport.vue` - 折旧报表
+     - 功能：展示资产折旧明细、累计折旧
+     - 建议：使用 ECharts 展示折旧趋势图
+   - `report/StatisticsReport.vue` - 统计报表
+     - 功能：多维度统计分析 (按分类、部门、位置等)
+     - 建议：使用饼图、柱状图展示分布情况
+   - `report/DisposalReport.vue` - 处置报表
+     - 功能：资产处置统计、残值回收统计
+     - 建议：展示处置方式分布、处置金额统计
 
 ### 🟢 P3 - 低优先级 (长期规划)
 
-4. **资产报表模块** (需要复杂查询和图表展示)
-   - `report/DepreciationReport.vue` - 折旧报表
-   - `report/StatisticsReport.vue` - 统计报表
-   - `report/DisposalReport.vue` - 处置报表
-   - 建议：使用 ECharts 等图表库，提供数据可视化
-
-5. **高级功能模块**
+4. **高级功能模块**
    - 资产定位模块 (位置监控、轨迹追踪) - 需硬件支持
    - 资产变更流程 - 完整的变更审批流程
    - 残值回收管理 - 处置收益记录
+   - 资产公告 - 系统通知功能
+
+---
+
+## 技术债务与优化建议
+
+### 代码层面
+1. **统一 API 调用规范**: 确保所有前端页面使用统一的错误处理和 loading 状态
+2. **组件复用**: 提取通用表单组件、表格组件，减少重复代码
+3. **类型安全**: 考虑引入 TypeScript 提升代码质量
+
+### 功能层面
+1. **权限控制细化**: 当前基于角色的权限控制可进一步细化到按钮级别
+2. **数据导出功能**: 为所有列表页面添加 Excel 导出功能
+3. **批量操作优化**: 完善批量导入、批量删除等操作的体验
+
+### 性能层面
+1. **数据库索引优化**: 针对常用查询条件添加索引
+2. **前端懒加载**: 对大型列表实施虚拟滚动
+3. **缓存策略**: 对基础数据 (如分类、位置) 实施前端缓存
 
 ---
 
 ## 当前进度 (2025-06-01 更新)
 
-- **总功能点**: 24 个核心模块
+- **总功能点**: 27 个核心模块
 
-- **已完成**: 23 个核心功能模块 (96%)
+- **已完成**: 24 个核心功能模块 (89%)
 
   - 核心基础：用户认证、Dashboard ✅ (2)
 
@@ -335,19 +353,17 @@
 
   - 资产处置：报废申请/处置审批/出售捐赠 (后端 + 前端完整实现) ✅ (3)
 
-  - 档案扩展：附件管理、变更记录 (前端完整实现) ✅ (2)
+  - 档案扩展：附件管理、变更记录、维保记录 (前端完整实现) ✅ (3)
 
-  - 前端页面：BorrowList、ScrapList、ApprovalList、SaleList、PlanList、ResultList、AttachmentList、ChangeList ✅ (8)
+  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList ✅ (24)
 
-- **待开发**: 3 个功能模块 (4%)
+- **待开发**: 5 个功能模块 (11%)
 
   - 资产门户：我的资产、部门资产、资产公告 ❌ (3)
 
   - 资产报表：资产台账、折旧报表、统计报表、处置报表 ❌ (4)
 
-  - 高级功能：资产定位、资产变更、残值回收 ❌ (3)
-
-- **完成率**: 约 96% (23/24 核心模块)
+- **完成率**: 约 89% (24/27 核心模块)
 
 
 
@@ -355,7 +371,7 @@
 
 - 后端 Java 文件：78 个 (Controller: 15, Entity: 15, Service: 15, ServiceImpl: 15, Mapper: 15, 其他：3)
 
-- 前端 Vue 文件：34 个
+- 前端 Vue 文件：30 个 (views 页面)
 
 - 数据库表：11 张
 
@@ -363,14 +379,14 @@
 
 **前端页面状态**:
 
-- ✅ 已完整实现：23 个页面
+- ✅ 已完整实现：24 个页面
 
-- ❌ 占位符页面：3 个页面 (MyAssets, DeptAssets, 报表类 3 个)
+- ❌ 占位符页面：6 个页面 (MyAssets, DeptAssets, 报表类 3 个，management/TransferList)
 
 
 ## 前端页面状态明细
 
-### ✅ 已完整实现的页面 (23 个)
+### ✅ 已完整实现的页面 (24 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
 | 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
@@ -395,12 +411,13 @@
 | 资产盘点 | inventory/ResultList.vue | ✅ 盘点结果列表、提交/复核/处理、批量导入 |
 | 核心基础 | Dashboard.vue | ✅ 工作台 |
 | 核心基础 | Login.vue | ✅ 登录页 |
+| 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (模拟 API) |
+| 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (模拟 API) |
 
-### ❌ 待开发的占位符页面 (3 个)
+### ❌ 待开发的占位符页面 (6 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
-| 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (模拟 API)
-| 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (模拟 API)
+| 资产管理 | management/TransferList.vue | ❌ 占位符 - 需使用 transfer 目录下的完整实现 |
 | 资产门户 | portal/MyAssets.vue | ❌ 占位符 - 待开发 |
 | 资产门户 | portal/DeptAssets.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/DepreciationReport.vue | ❌ 占位符 - 待开发 |
@@ -409,32 +426,22 @@
 
 ## 最近更新
 
-### 2025-06-01: 完成资产处置模块前端页面开发 (ApprovalList, SaleList)
-- **项目整体进度**: 87% (21/24 核心模块完成)
+### 2025-06-01: 项目进度分析与 TODO 文档更新
+- **项目整体进度**: 89% (24/27 核心模块完成)
 - **代码统计**: 
   - 后端 Java 文件：78 个 (Controller: 15, Entity: 15, Service: 15, ServiceImpl: 15, Mapper: 15)
-  - 前端 Vue 文件：32 个 (已完整实现：21 个，占位符：5 个)
+  - 前端 Vue 文件：30 个 (views 页面，已完整实现：24 个，占位符：6 个)
   - 数据库表：11 张
 - **更新内容**:
-  - 完成 `disposal/ApprovalList.vue` 开发 - 处置审批列表页
-    - 功能：列表查询 (按处置单号/资产编码/资产名称/处置类型/审批状态/处置状态筛选)
-    - 功能：审批通过/拒绝 (带审批意见)
-    - 功能：执行处置 (选择处置方式、填写成交金额、受让方信息)
-    - 功能：完成处置、取消处置
-    - 功能：查看详情 (完整的处置申请信息)
-    - 后端接口：`/api/asset/disposal/*` (list, approve, execute, complete, cancel)
-  - 完成 `disposal/SaleList.vue` 开发 - 出售捐赠列表页
-    - 功能：列表查询 (按处置单号/资产编码/资产名称/处置类型/审批状态/处置状态筛选)
-    - 功能：审批通过/拒绝 (带审批意见)
-    - 功能：执行处置 (选择处置方式、填写成交金额、受让方信息)
-    - 功能：完成处置、取消处置
-    - 功能：查看详情 (包含评估价值、成交金额、受让方等信息)
-    - 后端接口：`/api/asset/disposal/*` (list, approve, execute, complete, cancel)
-  - 更新 TODO.md 前端页面状态表 (已完整实现页面从 19 个增加到 21 个)
-  - 更新当前进度部分，反映资产处置模块前端已全部完成
+  - 分析项目完成情况，发现 `management/TransferList.vue` 是占位符，但完整的调拨功能已在 `transfer/` 目录下实现
+  - 确认档案扩展模块 (AttachmentList, ChangeList) 已完整实现 (模拟 API)
+  - 更新 TODO.md 中当前进度部分 (完成率从 96% 修正为 89%)
+  - 更新前端页面状态明细表 (已完整实现 24 个页面，待开发 6 个页面)
+  - 新增"技术债务与优化建议"章节，涵盖代码、功能、性能三个层面
+  - 更新下一步开发建议，明确优先级和具体实施要点
 - **下一步开发建议**:
-  1. **P1 优先级**：档案扩展模块 (附件管理、变更记录) - 需前后端配合开发
-  2. **P2 优先级**：资产门户模块 (我的资产、部门资产) - 可复用现有 AssetCard 查询接口
+  1. **P1 优先级**：修复 `management/TransferList.vue` 占位符问题
+  2. **P2 优先级**：资产门户模块 (MyAssets, DeptAssets) - 可复用现有 AssetCard 查询接口
   3. **P3 优先级**：资产报表模块 (折旧报表、统计报表、处置报表) - 需图表库支持
 
 - 2025-05-29: 项目进度分析与文档更新
