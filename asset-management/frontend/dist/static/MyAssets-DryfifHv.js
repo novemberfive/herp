@@ -1,0 +1,1 @@
+import{_ as o}from"./index-BEBcObf4.js";import{j as t,A as s,C as c,l as n}from"./element-plus-IE5iS8oH.js";const r={},_={class:"placeholder"};function a(p,l){const e=n("el-empty");return t(),s("div",_,[c(e,{description:"我的资产功能开发中"})])}const f=o(r,[["render",a],["__scopeId","data-v-6ebcf9b0"]]);export{f as default};
