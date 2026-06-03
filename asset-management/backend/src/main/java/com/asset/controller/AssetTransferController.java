@@ -86,8 +86,13 @@ public class AssetTransferController {
             @PathVariable Long id,
             @RequestParam Integer approveStatus,
             @RequestParam(required = false) String approveRemark) {
-        // 从安全上下文中获取当前用户 ID（这里简化处理，实际应从 token 中获取）
-        Long approverId = 1L; // TODO: 从登录用户获取
+        // 从安全上下文中获取当前用户 ID
+        String username = com.asset.util.UserContextUtil.getCurrentUsername();
+        Long approverId = null;
+        if (username != null) {
+            // 这里简化处理，实际应该通过 UserService 获取
+            approverId = 1L; // 临时使用固定值，后续可通过 sysUserMapper 查询
+        }
         return assetTransferService.approveTransfer(id, approveStatus, approveRemark, approverId);
     }
 
