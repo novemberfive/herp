@@ -54,6 +54,54 @@ public class AssetService {
     }
 
     /**
+     * 获取当前用户的资产列表（我的资产）
+     */
+    @Cacheable(value = "asset:myassets", key = "#userId + '_' + #pageNum + '_' + #pageSize")
+    public Result<Map<String, Object>> getMyAssets(Long userId, Integer pageNum, Integer pageSize) {
+        Page<AssetCard> page = new Page<>(pageNum, pageSize);
+        
+        LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AssetCard::getDeleted, 0);
+        wrapper.eq(AssetCard::getUserId, userId);
+        wrapper.orderByDesc(AssetCard::getCreateTime);
+        
+        Page<AssetCard> resultPage = assetCardMapper.selectPage(page, wrapper);
+        
+        Map<String, Object> data = Map.of(
+            "list", resultPage.getRecords(),
+            "total", resultPage.getTotal(),
+            "pageNum", pageNum,
+            "pageSize", pageSize
+        );
+        
+        return Result.success(data);
+    }
+
+    /**
+     * 获取部门资产列表
+     */
+    @Cacheable(value = "asset:deptassets", key = "#departmentId + '_' + #pageNum + '_' + #pageSize")
+    public Result<Map<String, Object>> getDeptAssets(Long departmentId, Integer pageNum, Integer pageSize) {
+        Page<AssetCard> page = new Page<>(pageNum, pageSize);
+        
+        LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AssetCard::getDeleted, 0);
+        wrapper.eq(AssetCard::getDepartmentId, departmentId);
+        wrapper.orderByDesc(AssetCard::getCreateTime);
+        
+        Page<AssetCard> resultPage = assetCardMapper.selectPage(page, wrapper);
+        
+        Map<String, Object> data = Map.of(
+            "list", resultPage.getRecords(),
+            "total", resultPage.getTotal(),
+            "pageNum", pageNum,
+            "pageSize", pageSize
+        );
+        
+        return Result.success(data);
+    }
+
+    /**
      * 根据 ID 查询资产详情
      */
     @Cacheable(value = "asset:detail", key = "#id")
