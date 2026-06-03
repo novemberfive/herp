@@ -9,6 +9,24 @@ export function getAssetList(pageNum = 1, pageSize = 10, status = null) {
   })
 }
 
+// 获取我的资产列表
+export function getMyAssets(pageNum = 1, pageSize = 10) {
+  return request({
+    url: '/assets/my/list',
+    method: 'get',
+    params: { pageNum, pageSize }
+  })
+}
+
+// 获取部门资产列表
+export function getDeptAssets(departmentId, pageNum = 1, pageSize = 10) {
+  return request({
+    url: '/assets/dept/list',
+    method: 'get',
+    params: { departmentId, pageNum, pageSize }
+  })
+}
+
 // 获取资产详情
 export function getAssetById(id) {
   return request({

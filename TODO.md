@@ -163,10 +163,12 @@
   - 数据库：inventory_result 表已创建
 
 ### 六、资产门户模块 (Portal)
-- [ ] **我的资产** - 个人名下资产查看
-  - 前端：MyAssets.vue (占位符，待开发)
-- [ ] **部门资产** - 部门资产视图
-  - 前端：DeptAssets.vue (占位符，待开发)
+- [x] **我的资产** - 个人名下资产查看 ✅ (前后端完成)
+  - 前端：MyAssets.vue (已完整实现：列表展示、状态标签、分页、详情跳转)
+  - 后端：AssetService.getMyAssets, AssetController./api/assets/my/list
+- [x] **部门资产** - 部门资产视图 ✅ (前后端完成)
+  - 前端：DeptAssets.vue (已完整实现：列表展示、使用人字段、状态标签、分页、详情跳转)
+  - 后端：AssetService.getDeptAssets, AssetController./api/assets/dept/list
 - [ ] **资产公告** - 资产管理相关通知
 
 ### 七、资产报表模块 (Report)
@@ -233,8 +235,9 @@
 ### 🟢 P2 - 辅助功能 (后续迭代)
 - [ ] **报表统计** - 数据分析决策支持
   - 资产台账、折旧报表、统计报表、处置报表
-- [ ] **资产门户** - 用户体验提升
-  - 我的资产、部门资产、资产公告
+- [x] **资产门户** - 用户体验提升 ✅ (前后端完成)
+  - 我的资产、部门资产 (已完成)
+- [ ] **资产公告** - 系统通知功能
 - [x] **附件管理** - 资产相关文件管理 ✅ (前端完成，模拟 API)
 - [x] **变更记录** - 资产变更历史记录 ✅ (前端完成，模拟 API)
 - [ ] **资产定位** - 高级追踪功能 (前后端均需开发)
@@ -280,7 +283,7 @@
 
 ## 下一步开发建议
 
-基于当前项目进度 (93% 完成率)，建议按以下优先级继续开发:
+基于当前项目进度 (90% 完成率)，建议按以下优先级继续开发:
 
 ### 🔴 P1 - 高优先级 (建议下一迭代完成) ✅ 已完成
 
@@ -294,19 +297,21 @@
      - 实现：新建任务对话框、编辑任务、查看详情对话框、表单提交逻辑
      - 功能：任务类型选择器、日期选择器组件
 
-### 🟡 P2 - 中优先级 (后续迭代)
+### 🟡 P2 - 中优先级 (后续迭代) ✅ 已完成
 
-2. **资产门户模块** (前端开发为主，2 个页面)
-   - `portal/MyAssets.vue` - 我的资产
-     - 功能：查看个人名下资产列表、资产详情
-     - 可复用现有 AssetCard 查询接口，增加按用户筛选
-     - 技术要点：使用当前登录用户 ID 过滤资产列表
-   - `portal/DeptAssets.vue` - 部门资产
-     - 功能：查看本部门资产列表、统计信息
-     - 可复用现有 AssetCard 查询接口，增加按部门筛选
-     - 技术要点：使用当前用户所属部门 ID 过滤资产列表
+2. **资产门户模块** (前后端完整实现，2 个页面) ✅
+   - `portal/MyAssets.vue` - 我的资产 ✅
+     - 状态：已完成 (2025-06-03)
+     - 功能：查看个人名下资产列表、状态标签、分页、详情跳转
+     - 后端：AssetService.getMyAssets, AssetController./api/assets/my/list
+     - 前端：完整实现列表展示、状态标签、分页组件
+   - `portal/DeptAssets.vue` - 部门资产 ✅
+     - 状态：已完成 (2025-06-03)
+     - 功能：查看本部门资产列表、使用人字段、状态标签、分页、详情跳转
+     - 后端：AssetService.getDeptAssets, AssetController./api/assets/dept/list
+     - 前端：完整实现列表展示、使用人字段、状态标签、分页组件
 
-3. **资产报表模块** (需要复杂查询和图表展示，4 个页面)
+3. **资产报表模块** (需要复杂查询和图表展示，3 个页面)
    - `report/DepreciationReport.vue` - 折旧报表
      - 功能：展示资产折旧明细、累计折旧
      - 建议：使用 ECharts 展示折旧趋势图
@@ -350,7 +355,7 @@
 
 - **总功能点**: 31 个核心页面
 
-- **已完成**: 26 个核心功能页面 (84%)
+- **已完成**: 28 个核心功能页面 (90%)
 
   - 核心基础：用户认证、Dashboard ✅ (2)
 
@@ -366,17 +371,17 @@
 
   - 资产处置：报废申请/处置审批/出售捐赠 (后端 + 前端完整实现) ✅ (3)
 
+  - 资产门户：我的资产、部门资产 ✅ (2) - 2025-06-03 新增
+
   - 档案扩展：附件管理、变更记录、维保记录 (前端完整实现) ✅ (3)
 
-  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList ✅ (26)
+  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList, MyAssets, DeptAssets ✅ (28)
 
-- **待开发**: 5 个功能页面 (16%)
-
-  - 资产门户：我的资产、部门资产 ❌ (2)
+- **待开发**: 3 个功能页面 (10%)
 
   - 资产报表：折旧报表、统计报表、处置报表 ❌ (3)
 
-- **完成率**: 约 84% (26/31 核心页面)
+- **完成率**: 约 90% (28/31 核心页面)
 
 
 
@@ -384,14 +389,14 @@
 
 - 后端 Java 文件：79 个 (Controller: 15, Entity: 15, Service: 15, ServiceImpl: 15, Mapper: 15, 其他：4)
 
-- 前端 Vue 文件：31 个 (views 页面，已完整实现：26 个，占位符：5 个)
+- 前端 Vue 文件：31 个 (views 页面，已完整实现：28 个，占位符：3 个)
 
 - 数据库表：15 张
 
 
 ## 前端页面状态明细
 
-### ✅ 已完整实现的页面 (26 个)
+### ✅ 已完整实现的页面 (28 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
 | 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
@@ -414,21 +419,41 @@
 | 资产盘点 | inventory/TaskList.vue | ✅ 盘点任务完整流程（新建/编辑/详情/执行） |
 | 资产盘点 | inventory/PlanList.vue | ✅ 盘点计划列表、新增/编辑、启用/停用、执行 |
 | 资产盘点 | inventory/ResultList.vue | ✅ 盘点结果列表、提交/复核/处理、批量导入 |
+| 资产门户 | portal/MyAssets.vue | ✅ 我的资产列表、状态标签、分页、详情跳转 |
+| 资产门户 | portal/DeptAssets.vue | ✅ 部门资产列表、使用人字段、状态标签、分页、详情跳转 |
 | 核心基础 | Dashboard.vue | ✅ 工作台 |
 | 核心基础 | Login.vue | ✅ 登录页 |
 | 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (真实 API) |
 | 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (真实 API) |
 
-### ❌ 待开发的占位符页面 (5 个)
+### ❌ 待开发的占位符页面 (3 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
-| 资产门户 | portal/MyAssets.vue | ❌ 占位符 - 待开发 |
-| 资产门户 | portal/DeptAssets.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/DepreciationReport.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/StatisticsReport.vue | ❌ 占位符 - 待开发 |
 | 资产报表 | report/DisposalReport.vue | ❌ 占位符 - 待开发 |
 
 ## 最近更新
+
+### 2025-06-03: P2 资产门户模块开发完成与 TODO 文档更新
+- **完成情况**: 
+  - ✅ MyAssets.vue：我的资产列表页面完整实现
+    - 功能：资产列表展示、状态标签、分页、详情跳转
+    - API：调用 /api/assets/my/list 接口
+  - ✅ DeptAssets.vue：部门资产列表页面完整实现
+    - 功能：部门资产列表展示、使用人字段、状态标签、分页、详情跳转
+    - API：调用 /api/assets/dept/list 接口
+  - ✅ asset.js：新增 getMyAssets 和 getDeptAssets API 函数
+  - ✅ AssetService.java：新增 getMyAssets 和 getDeptAssets 方法
+  - ✅ AssetController.java：新增 /api/assets/my/list 和 /api/assets/dept/list 接口
+- **当前状态**:
+  - 后端 Java 文件：79 个
+  - 前端 Vue 页面：31 个（28 个完整实现，3 个占位符）
+  - 数据库表：15 张
+  - 整体完成率：约 90% (28/31 核心页面)
+- **剩余 TODO 项**（非 P2 优先级）:
+  - AssetBorrowServiceImpl:217 - 消息通知系统集成（P3）
+  - InventoryPlanServiceImpl:149 - 盘点计划自动生成任务（P2）
 
 ### 2025-06-03: P1 开发任务完成与 TODO 文档更新
 - **完成情况**: 
