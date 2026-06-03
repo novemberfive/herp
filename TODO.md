@@ -283,7 +283,7 @@
 
 ## 下一步开发建议
 
-基于当前项目进度 (90% 完成率)，建议按以下优先级继续开发:
+基于当前项目进度 (100% 完成率)，核心功能已全部完成，建议按以下优先级进行优化和扩展:
 
 ### 🔴 P1 - 高优先级 (建议下一迭代完成) ✅ 已完成
 
@@ -311,24 +311,53 @@
      - 后端：AssetService.getDeptAssets, AssetController./api/assets/dept/list
      - 前端：完整实现列表展示、使用人字段、状态标签、分页组件
 
-3. **资产报表模块** (需要复杂查询和图表展示，3 个页面)
-   - `report/DepreciationReport.vue` - 折旧报表
-     - 功能：展示资产折旧明细、累计折旧
-     - 建议：使用 ECharts 展示折旧趋势图
-   - `report/StatisticsReport.vue` - 统计报表
-     - 功能：多维度统计分析 (按分类、部门、位置等)
-     - 建议：使用饼图、柱状图展示分布情况
-   - `report/DisposalReport.vue` - 处置报表
-     - 功能：资产处置统计、残值回收统计
-     - 建议：展示处置方式分布、处置金额统计
+3. **资产报表模块** (需要复杂查询和图表展示，3 个页面) ✅
+   - `report/DepreciationReport.vue` - 折旧报表 ✅
+     - 状态：已完成 (2025-06-03)
+     - 功能：展示资产折旧明细、累计折旧、图表展示、数据导出
+     - 实现：ECharts 展示折旧趋势图、Excel 导出功能
+   - `report/StatisticsReport.vue` - 统计报表 ✅
+     - 状态：已完成 (2025-06-03)
+     - 功能：多维度统计分析 (按分类、部门、位置等)、图表展示、数据导出
+     - 实现：饼图、柱状图展示分布情况、Excel 导出功能
+   - `report/DisposalReport.vue` - 处置报表 ✅
+     - 状态：已完成 (2025-06-03)
+     - 功能：资产处置统计、残值回收统计、图表展示、数据导出
+     - 实现：展示处置方式分布、处置金额统计、Excel 导出功能
 
 ### 🟢 P3 - 低优先级 (长期规划)
 
-4. **高级功能模块**
-   - 资产定位模块 (位置监控、轨迹追踪) - 需硬件支持
-   - 资产变更流程 - 完整的变更审批流程
-   - 残值回收管理 - 处置收益记录
-   - 资产公告 - 系统通知功能
+4. **技术债务清理与优化**
+   - [ ] **消息通知系统集成** - AssetBorrowServiceImpl:217
+     - 实现借用逾期自动提醒功能
+     - 集成邮件、站内信等通知渠道
+   - [ ] **盘点计划自动生成任务** - InventoryPlanServiceImpl:149
+     - 根据盘点计划自动生成盘点任务
+     - 支持定时任务调度
+
+5. **高级功能模块**
+   - [ ] 资产定位模块 (位置监控、轨迹追踪) - 需硬件支持
+   - [ ] 资产变更流程 - 完整的变更审批流程
+   - [ ] 残值回收管理 - 处置收益记录
+   - [ ] 资产公告 - 系统通知功能
+
+6. **性能优化**
+   - [ ] 数据库索引优化 - 针对常用查询条件添加索引
+   - [ ] 前端懒加载 - 对大型列表实施虚拟滚动
+   - [ ] 缓存策略 - 对基础数据 (如分类、位置) 实施前端缓存
+   - [ ] Redis 缓存 - 引入 Redis 缓存热点数据
+
+7. **用户体验提升**
+   - [ ] 权限控制细化 - 当前基于角色的权限控制可进一步细化到按钮级别
+   - [ ] 批量操作优化 - 完善批量导入、批量删除等操作的体验
+   - [ ] 移动端适配 - 响应式布局优化，支持移动端访问
+   - [ ] 主题定制 - 支持多主题切换
+
+8. **DevOps 改进**
+   - [ ] CI/CD 流水线 - 自动化构建、测试、部署
+   - [ ] 容器化部署 - Docker 镜像打包，Kubernetes 部署
+   - [ ] 监控告警 - 接入 Prometheus + Grafana 监控体系
+   - [ ] 日志收集 - 接入 ELK 日志分析平台
 
 ---
 
@@ -355,7 +384,7 @@
 
 - **总功能点**: 31 个核心页面
 
-- **已完成**: 28 个核心功能页面 (90%)
+- **已完成**: 31 个核心功能页面 (100%)
 
   - 核心基础：用户认证、Dashboard ✅ (2)
 
@@ -375,28 +404,28 @@
 
   - 档案扩展：附件管理、变更记录、维保记录 (前端完整实现) ✅ (3)
 
-  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList, MyAssets, DeptAssets ✅ (28)
+  - 资产报表：折旧报表、统计报表、处置报表 ✅ (3) - 2025-06-03 新增
 
-- **待开发**: 3 个功能页面 (10%)
+  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList, MyAssets, DeptAssets, DepreciationReport, StatisticsReport, DisposalReport ✅ (31)
 
-  - 资产报表：折旧报表、统计报表、处置报表 ❌ (3)
+- **待开发**: 0 个功能页面 (0%)
 
-- **完成率**: 约 90% (28/31 核心页面)
+- **完成率**: 约 100% (31/31 核心页面)
 
 
 
 **代码统计**:
 
-- 后端 Java 文件：79 个 (Controller: 15, Entity: 15, Service: 15, ServiceImpl: 15, Mapper: 15, 其他：4)
+- 后端 Java 文件：79 个 (Controller: 16, Entity: 15, Service: 16, ServiceImpl: 15, Mapper: 15, 其他：2)
 
-- 前端 Vue 文件：31 个 (views 页面，已完整实现：28 个，占位符：3 个)
+- 前端 Vue 文件：31 个 (views 页面，已完整实现：31 个)
 
 - 数据库表：15 张
 
 
 ## 前端页面状态明细
 
-### ✅ 已完整实现的页面 (28 个)
+### ✅ 已完整实现的页面 (31 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
 | 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
@@ -421,19 +450,50 @@
 | 资产盘点 | inventory/ResultList.vue | ✅ 盘点结果列表、提交/复核/处理、批量导入 |
 | 资产门户 | portal/MyAssets.vue | ✅ 我的资产列表、状态标签、分页、详情跳转 |
 | 资产门户 | portal/DeptAssets.vue | ✅ 部门资产列表、使用人字段、状态标签、分页、详情跳转 |
+| 资产报表 | report/DepreciationReport.vue | ✅ 折旧报表列表、图表展示、数据导出 |
+| 资产报表 | report/StatisticsReport.vue | ✅ 统计报表、多维度分析、图表展示、数据导出 |
+| 资产报表 | report/DisposalReport.vue | ✅ 处置报表列表、图表展示、数据导出 |
 | 核心基础 | Dashboard.vue | ✅ 工作台 |
 | 核心基础 | Login.vue | ✅ 登录页 |
 | 档案扩展 | archive/AttachmentList.vue | ✅ 附件列表、上传、下载、预览、删除、批量操作 (真实 API) |
 | 档案扩展 | archive/ChangeList.vue | ✅ 变更记录列表、新增、详情、导出 (真实 API) |
 
-### ❌ 待开发的占位符页面 (3 个)
-| 模块 | 页面文件 | 状态 |
-|------|---------|------|
-| 资产报表 | report/DepreciationReport.vue | ❌ 占位符 - 待开发 |
-| 资产报表 | report/StatisticsReport.vue | ❌ 占位符 - 待开发 |
-| 资产报表 | report/DisposalReport.vue | ❌ 占位符 - 待开发 |
-
 ## 最近更新
+
+### 2025-06-03: 资产报表模块开发完成与 TODO 文档更新 - 项目 100% 完成
+- **完成情况**: 
+  - ✅ DepreciationReport.vue：折旧报表页面完整实现
+    - 功能：折旧报表列表查询、日期筛选、分类筛选、图表展示（ECharts）、数据导出 Excel
+    - API：调用 /api/reports/depreciation 接口
+  - ✅ StatisticsReport.vue：统计报表页面完整实现
+    - 功能：多维度统计分析（按状态、分类、部门）、图表展示（饼图、柱状图）、数据导出 Excel
+    - API：调用 /api/reports/statistics 接口
+  - ✅ DisposalReport.vue：处置报表页面完整实现
+    - 功能：处置报表列表查询、日期筛选、处置类型筛选、图表展示、数据导出 Excel
+    - API：调用 /api/reports/disposal 接口
+  - ✅ ReportController.java：报表控制器完整实现（6 个接口）
+    - GET /api/reports/statistics - 获取统计报表
+    - GET /api/reports/disposal - 获取处置报表
+    - GET /api/reports/depreciation - 获取折旧报表
+    - GET /api/reports/export/statistics - 导出统计报表
+    - GET /api/reports/export/disposal - 导出处置报表
+    - GET /api/reports/export/depreciation - 导出折旧报表
+  - ✅ ReportServiceImpl.java：报表服务实现类完整实现
+    - getStatisticsReport: 统计分析（总数、状态分布、分类分布、部门分布、金额统计）
+    - getDisposalReport: 处置统计（分页列表、统计数据、图表数据）
+    - getDepreciationReport: 折旧统计（分页列表、统计数据、图表数据）
+    - exportStatisticsReport: 导出统计报表为 Excel
+    - exportDisposalReport: 导出处置报表为 Excel
+    - exportDepreciationReport: 导出折旧报表为 Excel
+  - ✅ report.js：新增报表相关 API 函数封装
+- **当前状态**:
+  - 后端 Java 文件：79 个（Controller: 16, Service: 16）
+  - 前端 Vue 页面：31 个（31 个完整实现，0 个占位符）
+  - 数据库表：15 张
+  - 整体完成率：100% (31/31 核心页面)
+- **剩余 TODO 项**（P3 低优先级优化项）:
+  - AssetBorrowServiceImpl:217 - 消息通知系统集成（P3）
+  - InventoryPlanServiceImpl:149 - 盘点计划自动生成任务（P3）
 
 ### 2025-06-03: P2 资产门户模块开发完成与 TODO 文档更新
 - **完成情况**: 
