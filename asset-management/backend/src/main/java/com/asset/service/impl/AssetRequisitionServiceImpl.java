@@ -4,7 +4,9 @@ import com.asset.dto.PageResult;
 import com.asset.dto.Result;
 import com.asset.entity.AssetRequisition;
 import com.asset.repository.AssetRequisitionRepository;
+import com.asset.repository.SysUserMapper;
 import com.asset.service.AssetRequisitionService;
+import com.asset.util.UserContextUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,11 @@ import java.util.UUID;
 public class AssetRequisitionServiceImpl implements AssetRequisitionService {
     
     private final AssetRequisitionRepository assetRequisitionRepository;
+    private final SysUserMapper sysUserMapper;
     
-    public AssetRequisitionServiceImpl(AssetRequisitionRepository assetRequisitionRepository) {
+    public AssetRequisitionServiceImpl(AssetRequisitionRepository assetRequisitionRepository, SysUserMapper sysUserMapper) {
         this.assetRequisitionRepository = assetRequisitionRepository;
+        this.sysUserMapper = sysUserMapper;
     }
     
     @Override
@@ -156,9 +160,14 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         requisition.setStatus(2); // 审批通过
         requisition.setApproveOpinion(opinion);
         requisition.setApproveTime(LocalDateTime.now());
-        // TODO: 获取当前登录用户信息设置审批人
-        // requisition.setApproverId(currentUserId);
-        // requisition.setApproverName(currentUserName);
+        
+        // 获取当前登录用户信息设置审批人
+        String username = UserContextUtil.getCurrentUsername();
+        if (username != null) {
+            requisition.setApproverId(getUserIdByUsername(username));
+            requisition.setApproverName(username);
+        }
+        
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
         return Result.success("审批通过", null);
@@ -178,10 +187,28 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         requisition.setStatus(3); // 审批拒绝
         requisition.setApproveOpinion(opinion);
         requisition.setApproveTime(LocalDateTime.now());
-        // TODO: 获取当前登录用户信息设置审批人
+        
+        // 获取当前登录用户信息设置审批人
+        String username = UserContextUtil.getCurrentUsername();
+        if (username != null) {
+            requisition.setApproverId(getUserIdByUsername(username));
+            requisition.setApproverName(username);
+        }
+        
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
         return Result.success("审批拒绝", null);
+    }
+    
+    /**
+     * 根据用户名获取用户 ID
+     */
+    private Long getUserIdByUsername(String username) {
+        if (username == null) {
+            return null;
+        }
+        com.asset.entity.SysUser user = sysUserMapper.selectByUsername(username);
+        return user != null ? user.getId() : null;
     }
     
     private String generateRequisitionNo() {

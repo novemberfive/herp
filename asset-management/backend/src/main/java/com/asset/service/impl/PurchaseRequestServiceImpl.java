@@ -4,7 +4,9 @@ import com.asset.dto.PageResult;
 import com.asset.dto.Result;
 import com.asset.entity.PurchaseRequest;
 import com.asset.repository.PurchaseRequestRepository;
+import com.asset.repository.SysUserMapper;
 import com.asset.service.PurchaseRequestService;
+import com.asset.util.UserContextUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,11 @@ import java.util.UUID;
 public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     
     private final PurchaseRequestRepository purchaseRequestRepository;
+    private final SysUserMapper sysUserMapper;
     
-    public PurchaseRequestServiceImpl(PurchaseRequestRepository purchaseRequestRepository) {
+    public PurchaseRequestServiceImpl(PurchaseRequestRepository purchaseRequestRepository, SysUserMapper sysUserMapper) {
         this.purchaseRequestRepository = purchaseRequestRepository;
+        this.sysUserMapper = sysUserMapper;
     }
     
     @Override
@@ -131,6 +135,14 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         if (request.getStatus() != 1) {
             return Result.error("只有待审批状态的采购申请可以审批");
         }
+        
+        // 获取当前登录用户信息设置审批人
+        String username = UserContextUtil.getCurrentUsername();
+        if (username != null) {
+            request.setApproverId(getUserIdByUsername(username));
+            request.setApproverName(username);
+        }
+        
         request.setStatus(2);
         request.setApproveOpinion(opinion);
         request.setApproveTime(LocalDateTime.now());
@@ -149,12 +161,31 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         if (request.getStatus() != 1) {
             return Result.error("只有待审批状态的采购申请可以审批");
         }
+        
+        // 获取当前登录用户信息设置审批人
+        String username = UserContextUtil.getCurrentUsername();
+        if (username != null) {
+            request.setApproverId(getUserIdByUsername(username));
+            request.setApproverName(username);
+        }
+        
         request.setStatus(3);
         request.setApproveOpinion(opinion);
         request.setApproveTime(LocalDateTime.now());
         request.setUpdateTime(LocalDateTime.now());
         purchaseRequestRepository.updateById(request);
         return Result.success("采购申请审批拒绝", null);
+    }
+    
+    /**
+     * 根据用户名获取用户 ID
+     */
+    private Long getUserIdByUsername(String username) {
+        if (username == null) {
+            return null;
+        }
+        com.asset.entity.SysUser user = sysUserMapper.selectByUsername(username);
+        return user != null ? user.getId() : null;
     }
     
     private String generateRequestNo() {
