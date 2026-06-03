@@ -97,18 +97,135 @@
         <el-button type="danger" @click="confirmApprove(false)">拒绝</el-button>
       </template>
     </el-dialog>
+
+    <!-- 新建/编辑申请对话框 -->
+    <el-dialog v-model="formDialogVisible" :title="formData.id ? '编辑采购申请' : '新建采购申请'" width="700px">
+      <el-form :model="formData" label-width="120px" ref="purchaseFormRef">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="资产名称" required>
+              <el-input v-model="formData.assetName" placeholder="请输入资产名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="规格型号">
+              <el-input v-model="formData.specification" placeholder="请输入规格型号" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="资产分类" required>
+              <el-select v-model="formData.categoryId" placeholder="请选择资产分类" @change="handleCategoryChange" style="width: 100%">
+                <el-option
+                  v-for="item in categoryList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="申请数量" required>
+              <el-input-number v-model="formData.quantity" :min="1" :max="9999" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="预估单价" required>
+              <el-input-number v-model="formData.estimatedPrice" :min="0" :precision="2" :step="0.01" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="预估总价">
+              <el-input :value="formData.estimatedPrice && formData.quantity ? (formData.estimatedPrice * formData.quantity).toFixed(2) : ''" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="申请部门" required>
+              <el-select v-model="formData.departmentId" placeholder="请选择申请部门" @change="handleDepartmentChange" style="width: 100%">
+                <el-option
+                  v-for="item in departmentList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="期望到货日期">
+              <el-date-picker
+                v-model="formData.expectedDeliveryDate"
+                type="date"
+                placeholder="选择日期"
+                value-format="YYYY-MM-DD"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="采购原因" required>
+          <el-input v-model="formData.purchaseReason" type="textarea" :rows="3" placeholder="请输入采购原因" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="请输入备注信息" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="formDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitForm">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 详情对话框 -->
+    <el-dialog v-model="viewDialogVisible" title="采购申请详情" width="800px">
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="申请单号">{{ viewData.requestNo }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(viewData.status)">{{ getStatusText(viewData.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="资产名称">{{ viewData.assetName }}</el-descriptions-item>
+        <el-descriptions-item label="规格型号">{{ viewData.specification }}</el-descriptions-item>
+        <el-descriptions-item label="资产分类">{{ viewData.categoryName }}</el-descriptions-item>
+        <el-descriptions-item label="申请数量">{{ viewData.quantity }}</el-descriptions-item>
+        <el-descriptions-item label="预估单价">¥{{ viewData.estimatedPrice?.toFixed(2) }}</el-descriptions-item>
+        <el-descriptions-item label="预估总价">¥{{ viewData.estimatedTotal?.toFixed(2) }}</el-descriptions-item>
+        <el-descriptions-item label="申请部门">{{ viewData.departmentName }}</el-descriptions-item>
+        <el-descriptions-item label="申请人">{{ viewData.applicantName }}</el-descriptions-item>
+        <el-descriptions-item label="申请日期">{{ formatDateTime(viewData.applyDate) }}</el-descriptions-item>
+        <el-descriptions-item label="期望到货日期">{{ formatDate(viewData.expectedDeliveryDate) }}</el-descriptions-item>
+        <el-descriptions-item label="采购原因" :span="2">{{ viewData.purchaseReason }}</el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">{{ viewData.remark }}</el-descriptions-item>
+        <el-descriptions-item v-if="viewData.status >= 2" label="审批人">{{ viewData.approverName }}</el-descriptions-item>
+        <el-descriptions-item v-if="viewData.status >= 2" label="审批时间">{{ formatDateTime(viewData.approveTime) }}</el-descriptions-item>
+        <el-descriptions-item v-if="viewData.status >= 2" label="审批意见" :span="2">{{ viewData.approveOpinion }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button @click="viewDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import request from '@/utils/request'
+import { Plus } from '@element-plus/icons-vue'
+import { getPurchaseList, createPurchase, updatePurchase, deletePurchase, submitPurchase, approvePurchase, rejectPurchase, getCategoryList, getDepartmentList, getPurchaseById } from '@/api/purchase'
 
 const loading = ref(false)
 const tableData = ref([])
 const approveDialogVisible = ref(false)
+const formDialogVisible = ref(false)
+const viewDialogVisible = ref(false)
 const currentRow = ref(null)
+const categoryList = ref([])
+const departmentList = ref([])
 
 const queryForm = reactive({
   requestNo: '',
@@ -126,6 +243,23 @@ const approveForm = reactive({
   opinion: ''
 })
 
+const formData = reactive({
+  id: null,
+  assetName: '',
+  specification: '',
+  categoryId: null,
+  categoryName: '',
+  quantity: 1,
+  estimatedPrice: null,
+  departmentId: null,
+  departmentName: '',
+  expectedDeliveryDate: '',
+  purchaseReason: '',
+  remark: ''
+})
+
+const viewData = ref({})
+
 const fetchData = async () => {
   loading.value = true
   try {
@@ -134,7 +268,7 @@ const fetchData = async () => {
       pageSize: pagination.pageSize,
       ...queryForm
     }
-    const res = await request.get('/acquisition/purchase/list', { params })
+    const res = await getPurchaseList(params.pageNum, params.pageSize, params)
     if (res.code === 200) {
       tableData.value = res.data.records
       pagination.total = res.data.total
@@ -143,6 +277,23 @@ const fetchData = async () => {
     ElMessage.error('获取数据失败')
   } finally {
     loading.value = false
+  }
+}
+
+const loadCategoryAndDepartment = async () => {
+  try {
+    const [categoryRes, deptRes] = await Promise.all([
+      getCategoryList(),
+      getDepartmentList()
+    ])
+    if (categoryRes.code === 200) {
+      categoryList.value = categoryRes.data.records || []
+    }
+    if (deptRes.code === 200) {
+      departmentList.value = deptRes.data.records || []
+    }
+  } catch (error) {
+    console.error('加载分类和部门失败', error)
   }
 }
 
@@ -159,16 +310,105 @@ const handleReset = () => {
 }
 
 const handleCreate = () => {
-  // TODO: 跳转到创建页面或打开对话框
-  ElMessage.info('新建申请功能待实现')
+  resetForm()
+  formDialogVisible.value = true
 }
 
-const handleView = (row) => {
-  ElMessage.info('查看详情：' + row.requestNo)
+const resetForm = () => {
+  formData.id = null
+  formData.assetName = ''
+  formData.specification = ''
+  formData.categoryId = null
+  formData.categoryName = ''
+  formData.quantity = 1
+  formData.estimatedPrice = null
+  formData.departmentId = null
+  formData.departmentName = ''
+  formData.expectedDeliveryDate = ''
+  formData.purchaseReason = ''
+  formData.remark = ''
 }
 
-const handleEdit = (row) => {
-  ElMessage.info('编辑：' + row.requestNo)
+const handleCategoryChange = (value) => {
+  const category = categoryList.value.find(item => item.id === value)
+  if (category) {
+    formData.categoryName = category.name
+  }
+}
+
+const handleDepartmentChange = (value) => {
+  const dept = departmentList.value.find(item => item.id === value)
+  if (dept) {
+    formData.departmentName = dept.name
+  }
+}
+
+const handleSubmitForm = async () => {
+  try {
+    const data = {
+      assetName: formData.assetName,
+      specification: formData.specification,
+      categoryId: formData.categoryId,
+      categoryName: formData.categoryName,
+      quantity: formData.quantity,
+      estimatedPrice: formData.estimatedPrice,
+      estimatedTotal: formData.estimatedPrice ? formData.estimatedPrice * formData.quantity : null,
+      departmentId: formData.departmentId,
+      departmentName: formData.departmentName,
+      expectedDeliveryDate: formData.expectedDeliveryDate || null,
+      purchaseReason: formData.purchaseReason,
+      remark: formData.remark
+    }
+    
+    if (formData.id) {
+      data.id = formData.id
+      await updatePurchase(data)
+      ElMessage.success('更新成功')
+    } else {
+      await createPurchase(data)
+      ElMessage.success('创建成功')
+    }
+    formDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.msg || (formData.id ? '更新失败' : '创建失败'))
+  }
+}
+
+const handleView = async (row) => {
+  try {
+    const res = await getPurchaseById(row.id)
+    if (res.code === 200) {
+      viewData.value = res.data
+      viewDialogVisible.value = true
+    }
+  } catch (error) {
+    ElMessage.error('获取详情失败')
+  }
+}
+
+const handleEdit = async (row) => {
+  try {
+    const res = await getPurchaseById(row.id)
+    if (res.code === 200) {
+      const data = res.data
+      formData.id = data.id
+      formData.assetName = data.assetName
+      formData.specification = data.specification
+      formData.categoryId = data.categoryId
+      formData.categoryName = data.categoryName
+      formData.quantity = data.quantity
+      formData.estimatedPrice = data.estimatedPrice
+      formData.departmentId = data.departmentId
+      formData.departmentName = data.departmentName
+      formData.expectedDeliveryDate = data.expectedDeliveryDate
+      formData.purchaseReason = data.purchaseReason
+      formData.remark = data.remark
+      formDialogVisible.value = true
+    }
+  } catch (error) {
+    ElMessage.error('获取详情失败')
+  }
 }
 
 const handleSubmit = async (row) => {
@@ -178,7 +418,7 @@ const handleSubmit = async (row) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await request.post(`/acquisition/purchase/${row.id}/submit`)
+    await submitPurchase(row.id)
     ElMessage.success('提交成功')
     fetchData()
   } catch (error) {
@@ -196,11 +436,13 @@ const handleApprove = (row) => {
 
 const confirmApprove = async (approved) => {
   try {
-    const url = approved 
-      ? `/acquisition/purchase/${currentRow.value.id}/approve?opinion=${encodeURIComponent(approveForm.opinion)}`
-      : `/acquisition/purchase/${currentRow.value.id}/reject?opinion=${encodeURIComponent(approveForm.opinion)}`
-    await request.post(url)
-    ElMessage.success(approved ? '审批通过' : '审批拒绝')
+    if (approved) {
+      await approvePurchase(currentRow.value.id, approveForm.opinion)
+      ElMessage.success('审批通过')
+    } else {
+      await rejectPurchase(currentRow.value.id, approveForm.opinion)
+      ElMessage.success('审批拒绝')
+    }
     approveDialogVisible.value = false
     fetchData()
   } catch (error) {
@@ -215,7 +457,7 @@ const handleDelete = async (row) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await request.delete(`/acquisition/purchase/${row.id}`)
+    await deletePurchase(row.id)
     ElMessage.success('删除成功')
     fetchData()
   } catch (error) {
@@ -240,8 +482,14 @@ const formatDateTime = (datetime) => {
   return new Date(datetime).toLocaleString('zh-CN', { hour12: false })
 }
 
+const formatDate = (date) => {
+  if (!date) return ''
+  return new Date(date).toISOString().split('T')[0]
+}
+
 onMounted(() => {
   fetchData()
+  loadCategoryAndDepartment()
 })
 </script>
 
