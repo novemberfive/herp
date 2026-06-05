@@ -34,8 +34,12 @@ public class AssetDisposalController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer disposalType,
             @RequestParam(required = false) Integer approveStatus,
-            @RequestParam(required = false) Integer disposalStatus) {
-        return assetDisposalService.getDisposalList(pageNum, pageSize, disposalType, approveStatus, disposalStatus);
+            @RequestParam(required = false) Integer disposalStatus,
+            @RequestParam(required = false) String disposalNo,
+            @RequestParam(required = false) String assetCode,
+            @RequestParam(required = false) String assetName) {
+        return assetDisposalService.getDisposalList(pageNum, pageSize, disposalType, approveStatus, disposalStatus,
+                disposalNo, assetCode, assetName);
     }
 
     /**

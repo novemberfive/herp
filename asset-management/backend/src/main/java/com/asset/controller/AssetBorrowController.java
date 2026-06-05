@@ -32,8 +32,12 @@ public class AssetBorrowController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer borrowStatus,
-            @RequestParam(required = false) Long borrowerId) {
-        return assetBorrowService.getBorrowList(pageNum, pageSize, borrowStatus, borrowerId);
+            @RequestParam(required = false) Long borrowerId,
+            @RequestParam(required = false) String borrowNo,
+            @RequestParam(required = false) String assetCode,
+            @RequestParam(required = false) String assetName,
+            @RequestParam(required = false) String borrowerName) {
+        return assetBorrowService.getBorrowList(pageNum, pageSize, borrowStatus, borrowerId, borrowNo, assetCode, assetName, borrowerName);
     }
 
     /**

@@ -27,7 +27,9 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
     }
 
     @Override
-    public Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus, Long borrowerId) {
+    public Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus,
+                                                     Long borrowerId, String borrowNo, String assetCode,
+                                                     String assetName, String borrowerName) {
         Page<AssetBorrow> page = new Page<>(pageNum, pageSize);
         
         LambdaQueryWrapper<AssetBorrow> wrapper = new LambdaQueryWrapper<>();
@@ -39,6 +41,18 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         
         if (borrowerId != null) {
             wrapper.eq(AssetBorrow::getBorrowerId, borrowerId);
+        }
+        if (borrowNo != null && !borrowNo.isEmpty()) {
+            wrapper.like(AssetBorrow::getBorrowNo, borrowNo);
+        }
+        if (assetCode != null && !assetCode.isEmpty()) {
+            wrapper.like(AssetBorrow::getAssetCode, assetCode);
+        }
+        if (assetName != null && !assetName.isEmpty()) {
+            wrapper.like(AssetBorrow::getAssetName, assetName);
+        }
+        if (borrowerName != null && !borrowerName.isEmpty()) {
+            wrapper.like(AssetBorrow::getBorrowerName, borrowerName);
         }
         
         wrapper.orderByDesc(AssetBorrow::getBorrowDate);

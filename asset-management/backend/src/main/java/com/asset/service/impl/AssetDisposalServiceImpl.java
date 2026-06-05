@@ -27,7 +27,9 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
     }
 
     @Override
-    public Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType, Integer approveStatus, Integer disposalStatus) {
+    public Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType,
+                                                       Integer approveStatus, Integer disposalStatus,
+                                                       String disposalNo, String assetCode, String assetName) {
         Page<AssetDisposal> page = new Page<>(pageNum, pageSize);
         
         LambdaQueryWrapper<AssetDisposal> wrapper = new LambdaQueryWrapper<>();
@@ -43,6 +45,15 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         
         if (disposalStatus != null) {
             wrapper.eq(AssetDisposal::getDisposalStatus, disposalStatus);
+        }
+        if (disposalNo != null && !disposalNo.isEmpty()) {
+            wrapper.like(AssetDisposal::getDisposalNo, disposalNo);
+        }
+        if (assetCode != null && !assetCode.isEmpty()) {
+            wrapper.like(AssetDisposal::getAssetCode, assetCode);
+        }
+        if (assetName != null && !assetName.isEmpty()) {
+            wrapper.like(AssetDisposal::getAssetName, assetName);
         }
         
         wrapper.orderByDesc(AssetDisposal::getApplyTime);
