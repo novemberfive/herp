@@ -104,6 +104,58 @@ export function deleteLocation(id) {
   })
 }
 
+// ==================== 部门管理 ====================
+
+// 获取所有部门列表
+export function getDepartmentList() {
+  return request({
+    url: '/departments/list',
+    method: 'get'
+  })
+}
+
+// 根据父级 ID 查询子部门
+export function getDepartmentByParentId(parentId) {
+  return request({
+    url: `/departments/parent/${parentId}`,
+    method: 'get'
+  })
+}
+
+// 查询一级部门
+export function getTopLevelDepartments() {
+  return request({
+    url: '/departments/top-level',
+    method: 'get'
+  })
+}
+
+// 创建部门
+export function createDepartment(data) {
+  return request({
+    url: '/departments',
+    method: 'post',
+    data
+  })
+}
+
+// 更新部门
+export function updateDepartment(data) {
+  return request({
+    url: '/departments',
+    method: 'put',
+    data
+  })
+}
+
+// 删除部门
+export function deleteDepartment(id) {
+  return request({
+    url: `/departments/${id}`,
+    method: 'delete'
+  })
+}
+
 // ==================== 维保记录管理 ====================
 
 // 获取维保记录列表（分页）

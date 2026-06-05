@@ -101,6 +101,7 @@
           </template>
           <el-menu-item index="/basic/category">资产分类</el-menu-item>
           <el-menu-item index="/basic/location">存放位置</el-menu-item>
+          <el-menu-item index="/basic/department">部门管理</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>

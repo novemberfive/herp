@@ -26,6 +26,26 @@ CREATE TABLE sys_user (
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统用户表';
 
+-- 系统部门表
+DROP TABLE IF EXISTS sys_department;
+CREATE TABLE sys_department (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    parent_id BIGINT DEFAULT 0 COMMENT '父级 ID',
+    dept_name VARCHAR(100) NOT NULL COMMENT '部门名称',
+    dept_code VARCHAR(50) COMMENT '部门编码',
+    leader_name VARCHAR(50) COMMENT '负责人',
+    phone VARCHAR(20) COMMENT '联系电话',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
+    level INT DEFAULT 1 COMMENT '层级',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_level (level),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统部门表';
+
 -- 资产分类表
 DROP TABLE IF EXISTS asset_category;
 CREATE TABLE asset_category (
@@ -148,6 +168,15 @@ CREATE TABLE inventory_task (
 -- 插入默认管理员账户（密码：admin123）
 INSERT INTO sys_user (username, password, real_name, role, status) 
 VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员', 'admin', 1);
+
+-- 插入示例部门数据
+INSERT INTO sys_department (parent_id, dept_name, dept_code, leader_name, phone, status, level, sort_order) VALUES
+(0, '院办公室', 'OFFICE', '张主任', '010-10000001', 1, 1, 1),
+(0, '信息科', 'IT', '李主任', '010-10000002', 1, 1, 2),
+(0, '财务科', 'FINANCE', '王主任', '010-10000003', 1, 1, 3),
+(0, '设备科', 'EQUIPMENT', '赵主任', '010-10000004', 1, 1, 4),
+(1, '行政组', 'OFFICE-ADMIN', '陈主管', '010-10000011', 1, 2, 1),
+(2, '运维组', 'IT-OPS', '周主管', '010-10000021', 1, 2, 1);
 
 -- 插入示例分类数据
 INSERT INTO asset_category (parent_id, category_name, category_code, level, sort_order) VALUES

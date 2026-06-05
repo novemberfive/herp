@@ -201,6 +201,12 @@ const routes = [
         name: 'LocationList',
         component: () => import('@/views/basic/LocationList.vue'),
         meta: { title: '存放位置' }
+      },
+      {
+        path: 'basic/department',
+        name: 'DepartmentList',
+        component: () => import('@/views/basic/DepartmentList.vue'),
+        meta: { title: '部门管理' }
       }
     ]
   }

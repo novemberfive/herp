@@ -50,7 +50,7 @@
                 <el-option
                   v-for="dept in departmentList"
                   :key="dept.id"
-                  :label="dept.name"
+                  :label="dept.deptName"
                   :value="dept.id"
                 />
               </el-select>
@@ -66,7 +66,7 @@
                 <el-option
                   v-for="dept in departmentList"
                   :key="dept.id"
-                  :label="dept.name"
+                  :label="dept.deptName"
                   :value="dept.id"
                 />
               </el-select>
@@ -132,6 +132,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getTransferById, createTransfer, updateTransfer } from '@/api/transfer'
 import { getAssetList } from '@/api/asset'
+import { getDepartmentList } from '@/api/basic'
 
 const route = useRoute()
 const router = useRouter()
@@ -139,19 +140,15 @@ const formRef = ref(null)
 const submitting = ref(false)
 const isEdit = ref(false)
 const assetList = ref([])
-const departmentList = ref([
-  { id: 1, name: '技术部' },
-  { id: 2, name: '市场部' },
-  { id: 3, name: '财务部' },
-  { id: 4, name: '人力资源部' },
-  { id: 5, name: '行政部' }
-])
+const departmentList = ref([])
 
 const form = reactive({
   assetId: null,
   assetName: '',
   fromDepartmentId: null,
+  fromDepartmentName: '',
   toDepartmentId: null,
+  toDepartmentName: '',
   transferType: 1,
   transferReason: '',
   applicantName: '',
@@ -176,12 +173,32 @@ const loadAssetList = async () => {
   }
 }
 
+const loadDepartmentList = async () => {
+  try {
+    const res = await getDepartmentList()
+    if (res.code === 200) {
+      departmentList.value = res.data || []
+    }
+  } catch (error) {
+    ElMessage.error('获取部门列表失败')
+    console.error(error)
+  }
+}
+
 const handleAssetChange = (assetId) => {
   const asset = assetList.value.find(a => a.id === assetId)
   if (asset) {
     form.assetName = asset.assetName
     form.fromDepartmentId = asset.departmentId
+    form.fromDepartmentName = asset.departmentName
   }
+}
+
+const fillDepartmentNames = () => {
+  const fromDept = departmentList.value.find(item => item.id === form.fromDepartmentId)
+  const toDept = departmentList.value.find(item => item.id === form.toDepartmentId)
+  form.fromDepartmentName = fromDept?.deptName || form.fromDepartmentName || ''
+  form.toDepartmentName = toDept?.deptName || form.toDepartmentName || ''
 }
 
 const handleSubmit = async () => {
@@ -191,6 +208,7 @@ const handleSubmit = async () => {
     if (valid) {
       submitting.value = true
       try {
+        fillDepartmentNames()
         if (isEdit.value) {
           await updateTransfer({ ...form, id: route.params.id })
           ElMessage.success('更新成功')
@@ -198,7 +216,7 @@ const handleSubmit = async () => {
           await createTransfer(form)
           ElMessage.success('创建成功')
         }
-        router.push('/transfers')
+        router.push('/management/transfer')
       } catch (error) {
         console.error(error)
       } finally {
@@ -221,6 +239,7 @@ const loadTransfer = async () => {
 
 onMounted(() => {
   loadAssetList()
+  loadDepartmentList()
   if (route.params.id) {
     loadTransfer()
   }

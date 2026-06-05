@@ -120,7 +120,7 @@
                 <el-option
                   v-for="item in categoryList"
                   :key="item.id"
-                  :label="item.name"
+                  :label="item.categoryName || item.name"
                   :value="item.id"
                 />
               </el-select>
@@ -151,7 +151,7 @@
                 <el-option
                   v-for="item in departmentList"
                   :key="item.id"
-                  :label="item.name"
+                  :label="item.deptName || item.name"
                   :value="item.id"
                 />
               </el-select>
@@ -287,10 +287,10 @@ const loadCategoryAndDepartment = async () => {
       getDepartmentList()
     ])
     if (categoryRes.code === 200) {
-      categoryList.value = categoryRes.data.records || []
+      categoryList.value = Array.isArray(categoryRes.data) ? categoryRes.data : (categoryRes.data.records || [])
     }
     if (deptRes.code === 200) {
-      departmentList.value = deptRes.data.records || []
+      departmentList.value = Array.isArray(deptRes.data) ? deptRes.data : (deptRes.data.records || [])
     }
   } catch (error) {
     console.error('加载分类和部门失败', error)
@@ -332,14 +332,14 @@ const resetForm = () => {
 const handleCategoryChange = (value) => {
   const category = categoryList.value.find(item => item.id === value)
   if (category) {
-    formData.categoryName = category.name
+    formData.categoryName = category.categoryName || category.name
   }
 }
 
 const handleDepartmentChange = (value) => {
   const dept = departmentList.value.find(item => item.id === value)
   if (dept) {
-    formData.departmentName = dept.name
+    formData.departmentName = dept.deptName || dept.name
   }
 }
 

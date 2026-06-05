@@ -1,1 +1,0 @@
-import{_ as o}from"./index-BEBcObf4.js";import{j as t,A as s,C as c,l as r}from"./element-plus-IE5iS8oH.js";const a={},n={class:"placeholder"};function _(p,l){const e=r("el-empty");return t(),s("div",n,[c(e,{description:"处置报表功能开发中"})])}const i=o(a,[["render",_],["__scopeId","data-v-3fe5babe"]]);export{i as default};
