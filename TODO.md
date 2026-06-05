@@ -5,16 +5,24 @@
 本次重新核对了 `plan/` 文档、`asset-management/TODO.md` 和当前源码。结论是：当前项目已经具备轻量级资产管理系统的主要骨架和多数核心页面，但不能再按旧口径标记为 100% 完成。更准确的当前状态如下：
 
 - 当前实现形态：Spring Boot 3.2 + MyBatis Plus + MySQL + Spring Security/JWT + Vue 3 + Element Plus + Vite 的轻量级单体应用。
-- 当前代码规模：后端 82 个 Java 文件、16 个 Controller、15 个实体、15 张数据库表；前端 29 个 `views` 页面；未发现后端 `src/test` 测试目录。
-- 已完成主干：认证、Dashboard、资产卡片、分类/位置、采购申请、验收、入库、领用退库、借用、调拨、维修、处置、盘点计划/任务/结果、我的资产/部门资产、统计/折旧/处置报表等。
+- 当前代码规模：后端 86 个 Java 文件、17 个 Controller、16 个实体、16 张数据库表；前端 30 个 `views` 页面；未发现后端 `src/test` 测试目录。
+- 已完成主干：认证、Dashboard、资产卡片、分类/位置/部门、采购申请、验收、入库、领用退库、借用、调拨、维修、处置、盘点计划/任务/结果、我的资产/部门资产、统计/折旧/处置报表等。
 - 需要修正的旧判断：`AssetService`、`AuthService`、`AssetCategoryService`、`AssetLocationService` 是具体 `@Service` 类，不是缺少 `Impl` 导致不可用。
-- 当前明确未完成点：第一阶段 5 个前端“新建”入口已完成；代码内仍剩 2 个后端 TODO，分别是借用逾期通知和盘点计划生成任务。
-- 与 `plan/` 完整蓝图相比仍缺：部门/供应商/资产主数据、系统管理/RBAC、资产预警、IoT 定位、扫码盘点、盘点报告、资产卡片多视图、导入导出深化、通知体系、CI/CD 和自动化测试。
-- 工程治理风险：`frontend/node_modules`、`frontend/dist` 已被纳入 Git 跟踪，根 `.gitignore` 还包含 Markdown 代码块围栏，建议作为下一轮工程化任务处理。
+- 当前明确未完成点：第一阶段 5 个前端“新建”入口已完成；部门管理与工程治理已完成；代码内仍剩 2 个后端 TODO，分别是借用逾期通知和盘点计划生成任务。
+- 与 `plan/` 完整蓝图相比仍缺：供应商/资产主数据、系统管理/RBAC、资产预警、IoT 定位、扫码盘点、盘点报告、资产卡片多视图、导入导出深化、通知体系、CI/CD 和自动化测试。
+- 工程治理进展：`frontend/node_modules`、`frontend/dist` 已取消 Git 跟踪，根 `.gitignore` 已修正；当前更突出的工程问题是后端 Maven compile 与前端 Vite build 的构建基线仍未恢复。
 
 当前更详细、可执行的下一步计划已同步到 `asset-management/TODO.md`。
 
 ## 2026-06-05 开发更新
+
+- 已提交并推送 `70adf9e 新增部门管理并清理前端产物跟踪`。
+- 已完成仓库工程治理：取消跟踪 `asset-management/frontend/node_modules`、`asset-management/frontend/dist`，修正根 `.gitignore`。
+- 已完成部门管理：新增 `sys_department` 表、后端 `/api/departments/**` 树形 CRUD、前端 `DepartmentList.vue` 页面和基础信息菜单入口。
+- 已将采购申请、资产调拨中的部门选择接入真实部门主数据。
+- 下一阶段建议优先：供应商管理 + 资产主数据，并穿插修复后端 Maven/前端 Vite 构建基线。
+
+## 2026-06-05 开发更新（主流程闭环）
 
 - 已提交 `624a48f 补齐资产主流程新建入口闭环`。
 - 已补齐 `AcceptanceList.vue`、`RequisitionList.vue`、`BorrowList.vue`、`ScrapList.vue`、`SaleList.vue` 的新建/编辑/详情闭环。
@@ -52,6 +60,14 @@
   - Service: AssetLocationService + AssetLocationServiceImpl
   - Controller: AssetLocationController
   - 前端：LocationList.vue ✅ (已完成：树形表格、搜索、新增/编辑/删除、子位置管理)
+
+- ✅ 部门管理 (后端完整 CRUD + 树形查询)
+  - Entity: SysDepartment
+  - Mapper: SysDepartmentMapper
+  - Service: SysDepartmentService
+  - Controller: SysDepartmentController
+  - 前端：DepartmentList.vue ✅ (已完成：树形表格、搜索、新增/编辑/删除、子部门管理)
+  - 已接入：采购申请、资产调拨部门选择器
 
 ### 3. 资产取得模块 (Acquisition)
 - ✅ 采购申请 (完整 CRUD + 审批流程)
@@ -114,8 +130,9 @@
   - 前端：TaskList.vue
   - 数据库：inventory_task 表已创建
 
-### 7. 数据库表 (共 11 张表)
+### 7. 数据库表 (当前 schema 共 16 张表)
 - ✅ sys_user - 系统用户表
+- ✅ sys_department - 系统部门表
 - ✅ asset_category - 资产分类表
 - ✅ asset_location - 资产存放位置表
 - ✅ asset_card - 资产卡片表
@@ -304,81 +321,44 @@
 
 ## 下一步开发建议
 
-基于 2026-06-05 重新审计后的口径，当前轻量级单体主流程已基本闭环，但不能按完整医院资产管理蓝图标记为 100% 完成。后续建议按以下优先级继续推进:
+基于 2026-06-05 最新状态，轻量级单体主流程已基本闭环，工程治理和部门主数据也已落地。下一步建议按“先补主数据，再恢复构建基线，再进入系统管理/RBAC”的主线推进。
 
-### 🔴 P1 - 高优先级 (建议下一迭代完成) ✅ 已完成
+### 🔴 P1 - 下一迭代建议优先
 
-1. **完善部分功能页面中的 TODO 项** (2 个页面) ✅
-   - `acquisition/PurchaseList.vue` - 实现"新建申请"按钮功能 ✅
-     - 状态：已完成 (2025-06-03)
-     - 实现：新建申请对话框、编辑申请、查看详情对话框、表单提交逻辑
-     - 新增：purchase.js API 文件封装所有接口调用
-   - `inventory/TaskList.vue` - 实现"新建任务"和"查看详情"按钮功能 ✅
-     - 状态：已完成 (2025-06-03)
-     - 实现：新建任务对话框、编辑任务、查看详情对话框、表单提交逻辑
-     - 功能：任务类型选择器、日期选择器组件
+1. **供应商管理**
+   - 新增供应商表、实体、Mapper、Service、Controller、API 封装、前端页面和菜单入口。
+   - 覆盖供应商名称、编码、联系人、联系电话、地址、状态、备注等基础字段。
+   - 接入采购申请、验收、入库、资产卡片中的供应商选择，替换部分文本输入。
 
-### 🟡 P2 - 中优先级 (后续迭代) ✅ 已完成
+2. **资产主数据管理**
+   - 新增资产主数据表和页面，维护资产名称、规格型号、分类、品牌、单位、默认价格、保修期等模板信息。
+   - 接入采购申请和资产卡片表单，让常用资产从文本录入升级为选择器。
 
-2. **资产门户模块** (前后端完整实现，2 个页面) ✅
-   - `portal/MyAssets.vue` - 我的资产 ✅
-     - 状态：已完成 (2025-06-03)
-     - 功能：查看个人名下资产列表、状态标签、分页、详情跳转
-     - 后端：AssetService.getMyAssets, AssetController./api/assets/my/list
-     - 前端：完整实现列表展示、状态标签、分页组件
-   - `portal/DeptAssets.vue` - 部门资产 ✅
-     - 状态：已完成 (2025-06-03)
-     - 功能：查看本部门资产列表、使用人字段、状态标签、分页、详情跳转
-     - 后端：AssetService.getDeptAssets, AssetController./api/assets/dept/list
-     - 前端：完整实现列表展示、使用人字段、状态标签、分页组件
+3. **构建基线修复**
+   - 后端修复 `mvn -q -DskipTests compile`：统一 JWT 依赖口径，处理 Lombok getter/setter 生成问题，修复 `ReportServiceImpl` 编译错误。
+   - 前端重新安装依赖并补齐 Rollup Windows optional dependency，恢复 `npm run build`。
 
-3. **资产报表模块** (需要复杂查询和图表展示，3 个页面) ✅
-   - `report/DepreciationReport.vue` - 折旧报表 ✅
-     - 状态：已完成 (2025-06-03)
-     - 功能：展示资产折旧明细、累计折旧、图表展示、数据导出
-     - 实现：ECharts 展示折旧趋势图、Excel 导出功能
-   - `report/StatisticsReport.vue` - 统计报表 ✅
-     - 状态：已完成 (2025-06-03)
-     - 功能：多维度统计分析 (按分类、部门、位置等)、图表展示、数据导出
-     - 实现：饼图、柱状图展示分布情况、Excel 导出功能
-   - `report/DisposalReport.vue` - 处置报表 ✅
-     - 状态：已完成 (2025-06-03)
-     - 功能：资产处置统计、残值回收统计、图表展示、数据导出
-     - 实现：展示处置方式分布、处置金额统计、Excel 导出功能
+### 🟡 P2 - 主数据稳定后推进
 
-### 🟢 P3 - 低优先级 (长期规划)
+4. **系统管理与权限**
+   - 用户管理、角色管理、菜单权限、按钮权限、部门数据权限。
+   - 当前 `SysUser` 只有轻量角色字段，需要演进为可维护 RBAC。
 
-4. **技术债务清理与优化**
-   - [ ] **消息通知系统集成** - AssetBorrowServiceImpl:217
-     - 实现借用逾期自动提醒功能
-     - 集成邮件、站内信等通知渠道
-   - [ ] **盘点计划自动生成任务** - InventoryPlanServiceImpl:149
-     - 根据盘点计划自动生成盘点任务
-     - 支持定时任务调度
+5. **盘点闭环深化**
+   - 盘点任务明细、扫码盘点、盘盈登记、盘亏处理、盘点报告。
+   - 落地 `InventoryPlanServiceImpl` 中“根据计划生成盘点任务”的 TODO。
 
-5. **高级功能模块**
-   - [ ] 资产定位模块 (位置监控、轨迹追踪) - 需硬件支持
-   - [ ] 资产变更流程 - 完整的变更审批流程
-   - [ ] 残值回收管理 - 处置收益记录
-   - [ ] 资产公告 - 系统通知功能
+6. **通知与预警体系**
+   - 落地 `AssetBorrowServiceImpl` 中借用逾期提醒 TODO。
+   - 扩展保修、保养、库存、报废等资产预警。
 
-6. **性能优化**
-   - [ ] 数据库索引优化 - 针对常用查询条件添加索引
-   - [ ] 前端懒加载 - 对大型列表实施虚拟滚动
-   - [ ] 缓存策略 - 对基础数据 (如分类、位置) 实施前端缓存
-   - [ ] Redis 缓存 - 引入 Redis 缓存热点数据
+### 🟢 P3 - 长期规划
 
-7. **用户体验提升**
-   - [ ] 权限控制细化 - 当前基于角色的权限控制可进一步细化到按钮级别
-   - [ ] 批量操作优化 - 完善批量导入、批量删除等操作的体验
-   - [ ] 移动端适配 - 响应式布局优化，支持移动端访问
-   - [ ] 主题定制 - 支持多主题切换
+7. **高级功能模块**
+   - 资产定位模块、资产变更流程、残值回收管理、资产公告。
 
-8. **DevOps 改进**
-   - [ ] CI/CD 流水线 - 自动化构建、测试、部署
-   - [ ] 容器化部署 - Docker 镜像打包，Kubernetes 部署
-   - [ ] 监控告警 - 接入 Prometheus + Grafana 监控体系
-   - [ ] 日志收集 - 接入 ELK 日志分析平台
+8. **工程与体验优化**
+   - 自动化测试、CI/CD、Docker 化部署、操作审计、批量导入导出、移动端适配。
 
 ---
 
@@ -401,15 +381,15 @@
 
 ---
 
-## 当前进度 (2025-06-03 更新)
+## 当前进度 (2026-06-05 更新)
 
-- **总功能点**: 31 个核心页面
+- **总功能点**: 30 个已路由 views 页面
 
-- **已完成**: 31 个核心功能页面 (100%)
+- **已完成**: 30 个已路由页面的基础功能闭环
 
   - 核心基础：用户认证、Dashboard ✅ (2)
 
-  - 基础信息：资产分类、存放位置 (后端 + 前端完整实现) ✅ (2)
+  - 基础信息：资产分类、存放位置、部门管理 (后端 + 前端完整实现) ✅ (3)
 
   - 资产取得：采购申请、验收登记、资产入库 ✅ (3)
 
@@ -427,30 +407,31 @@
 
   - 资产报表：折旧报表、统计报表、处置报表 ✅ (3) - 2025-06-03 新增
 
-  - 前端页面：CategoryList, LocationList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList, MyAssets, DeptAssets, DepreciationReport, StatisticsReport, DisposalReport ✅ (31)
+  - 前端页面：CategoryList, LocationList, DepartmentList, PurchaseList, AcceptanceList, StorageList, RequisitionList, BorrowList, TransferList/Form/Detail, MaintenanceList, AssetList/Form/Detail, TaskList, PlanList, ResultList, ScrapList, ApprovalList, SaleList, AttachmentList, ChangeList, MyAssets, DeptAssets, DepreciationReport, StatisticsReport, DisposalReport ✅ (30)
 
-- **待开发**: 0 个功能页面 (0%)
+- **待开发**: 供应商管理、资产主数据、系统管理/RBAC、盘点报告/扫码盘点、通知预警等完整蓝图扩展能力
 
-- **完成率**: 约 100% (31/31 核心页面)
+- **完成率**: 约 90%（按轻量级单体当前范围估算；按完整医院资产管理蓝图仍有扩展空间）
 
 
 
 **代码统计**:
 
-- 后端 Java 文件：79 个 (Controller: 16, Entity: 15, Service: 16, ServiceImpl: 15, Mapper: 15, 其他：2)
+- 后端 Java 文件：86 个 (Controller: 17, Entity: 16)
 
-- 前端 Vue 文件：31 个 (views 页面，已完整实现：31 个)
+- 前端 Vue views 页面：30 个
 
-- 数据库表：15 张
+- 数据库表：16 张
 
 
 ## 前端页面状态明细
 
-### ✅ 已完整实现的页面 (31 个)
+### ✅ 已完整实现的页面 (30 个)
 | 模块 | 页面文件 | 状态 |
 |------|---------|------|
 | 基础信息 | CategoryList.vue | ✅ 树形表格、CRUD、子分类管理 |
 | 基础信息 | LocationList.vue | ✅ 树形表格、CRUD、子位置管理 |
+| 基础信息 | DepartmentList.vue | ✅ 树形表格、CRUD、子部门管理 |
 | 资产取得 | PurchaseList.vue | ✅ 采购申请完整流程（新建/编辑/详情/审批） |
 | 资产取得 | AcceptanceList.vue | ✅ 验收登记完整流程 |
 | 资产取得 | StorageList.vue | ✅ 资产入库完整流程 |
@@ -507,7 +488,7 @@
     - exportDisposalReport: 导出处置报表为 Excel
     - exportDepreciationReport: 导出折旧报表为 Excel
   - ✅ report.js：新增报表相关 API 函数封装
-- **当前状态**:
+- **当时状态**:
   - 后端 Java 文件：79 个（Controller: 16, Service: 16）
   - 前端 Vue 页面：31 个（31 个完整实现，0 个占位符）
   - 数据库表：15 张
@@ -527,7 +508,7 @@
   - ✅ asset.js：新增 getMyAssets 和 getDeptAssets API 函数
   - ✅ AssetService.java：新增 getMyAssets 和 getDeptAssets 方法
   - ✅ AssetController.java：新增 /api/assets/my/list 和 /api/assets/dept/list 接口
-- **当前状态**:
+- **当时状态**:
   - 后端 Java 文件：79 个
   - 前端 Vue 页面：31 个（28 个完整实现，3 个占位符）
   - 数据库表：15 张
@@ -544,7 +525,7 @@
   - ✅ 修复 AssetRequisitionServiceImpl 审批人信息自动填充
   - ✅ 修复 AssetTransferController 审批人信息获取
   - ✅ 清理所有 P1 相关的 TODO 注释
-- **当前状态**:
+- **当时状态**:
   - 后端 Java 文件：79 个（新增 UserContextUtil）
   - 前端 Vue 页面：31 个（26 个完整实现，5 个占位符）
   - 数据库表：15 张

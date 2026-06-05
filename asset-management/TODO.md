@@ -2,7 +2,7 @@
 
 ## 项目进度概览
 
-**总体进度：约 88%（29/29 已路由前端页面不再存在明确“新建待实现”入口；若按 plan 完整医院资产管理蓝图计算，仍有多项扩展模块未落地）**
+**总体进度：约 90%（30/30 已路由前端页面不再存在明确“新建待实现”入口；部门管理与仓库工程治理已完成；若按 plan 完整医院资产管理蓝图计算，仍有多项扩展模块未落地）**
 
 *最后更新时间：2026-06-05*
 
@@ -11,12 +11,14 @@
 ## 本次代码审计结论（2026-06-05）
 
 - 当前实现是 **Spring Boot 3.2 + MyBatis Plus + MySQL + Spring Security/JWT + Vue 3 + Element Plus + Vite** 的轻量级单体应用，不是 `plan/pd/系统架构设计文档.md` 中描述的微服务、网关、Redis、MQ、IoT、工作流完整架构。
-- 后端已有 82 个 Java 文件，包含 16 个 Controller、15 个实体、15 张数据库表、认证/资产/采购/验收/入库/领用/借用/调拨/维修/处置/盘点/报表等主要服务。
-- 前端已有 29 个 `views` 页面并配置路由，覆盖 Dashboard、登录、资产、采购、验收、入库、档案扩展、领用退库、借用、调拨、处置、盘点、门户和报表。
+- 后端已有 86 个 Java 文件，包含 17 个 Controller、16 个实体、16 张数据库表、认证/资产/采购/验收/入库/领用/借用/调拨/维修/处置/盘点/报表/部门主数据等主要服务。
+- 前端已有 30 个 `views` 页面并配置路由，覆盖 Dashboard、登录、资产、采购、验收、入库、档案扩展、领用退库、借用、调拨、处置、盘点、门户、报表和部门管理。
 - `AssetService`、`AuthService`、`AssetCategoryService`、`AssetLocationService` 当前是具体 `@Service` 类而不是接口，因此此前 TODO 中“AssetServiceImpl/AuthServiceImpl 缺失导致功能不可用”的判断不准确。
 - 2026-06-05 已完成第一阶段主流程闭环修复：验收、领用/退库、借用、报废、出售/捐赠 5 个列表页“新建”入口已补齐，并同步修正借用/处置列表接口口径。
+- 2026-06-05 已完成第二阶段前置任务：清理 `frontend/node_modules`、`frontend/dist` 的 Git 跟踪，修正根 `.gitignore`，新增部门管理后端表/接口/前端页面，并将采购申请、资产调拨的部门选择接入真实部门主数据。
 - 代码中仍有 2 个明确后端 TODO 注释：借用逾期通知集成、盘点计划生成任务。
-- 当前仓库把 `asset-management/frontend/node_modules` 和 `asset-management/frontend/dist` 纳入了 Git 跟踪；根 `.gitignore` 还包含 Markdown 代码块围栏，建议作为工程治理任务处理。
+- 当前仓库已不再跟踪 `asset-management/frontend/node_modules` 和 `asset-management/frontend/dist`；后续依赖和构建产物会被根 `.gitignore` 排除。
+- 当前构建基线仍需单独治理：后端 Maven compile 受既有 JWT 依赖、Lombok getter/setter、`ReportServiceImpl` 问题阻塞；前端完整 build 受 Rollup Windows 可选依赖缺失阻塞。
 - 未发现后端 `src/test` 测试目录，自动化测试体系尚未建立。
 
 ---
@@ -34,7 +36,7 @@
 ### 2. 基础信息
 - [x] 资产分类管理：树形列表、CRUD、子分类
 - [x] 存放位置管理：树形列表、CRUD、子位置
-- [ ] 部门管理：plan 中有需求，当前无表、无后端、无前端页面
+- [x] 部门管理：树形列表、CRUD、子部门，已接入采购申请和资产调拨部门选择
 - [ ] 供应商管理：plan 中有采购/资产字段依赖，当前无独立主数据模块
 - [ ] 资产主数据管理：plan 中有完整需求，当前仅以资产卡片承载部分资产信息
 
@@ -102,26 +104,36 @@
    - 根目录 `TODO.md` 和 `asset-management/TODO.md` 曾出现完成率、页面数、服务实现状态互相矛盾的问题。
    - 本次已同步：前端“新建”入口未完成数归零，明确代码 TODO 数修正为 2。
 
-3. **修复仓库工程治理问题**
-   - 清理已跟踪的 `frontend/node_modules`、`frontend/dist`。
-   - 修正根 `.gitignore` 中的 Markdown 代码块围栏。
-   - 目标：避免依赖和构建产物污染代码审查、clone 速度和提交体积。
+3. **修复仓库工程治理问题** ✅
+   - 已清理 Git 跟踪的 `frontend/node_modules`、`frontend/dist`，本地文件保留。
+   - 已修正根 `.gitignore` 中的 Markdown 代码块围栏和 `asset-management/` 整体忽略规则。
+   - 提交：`70adf9e 新增部门管理并清理前端产物跟踪`
+
+4. **部门管理主数据** ✅
+   - 已新增 `sys_department` 表、实体、Mapper、Service、Controller。
+   - 已新增 `/api/departments/**` 树形 CRUD 接口和 `DepartmentList.vue` 前端页面。
+   - 已将采购申请、资产调拨中的部门下拉接入真实部门接口。
 
 ### P1 - 对齐 plan 中的核心业务缺口
 
-4. **基础主数据补齐**
-   - 部门管理、供应商管理、资产主数据管理。
+5. **基础主数据补齐**
+   - 下一步优先做供应商管理、资产主数据管理。
    - 需要新增数据库表、实体、Mapper、Service、Controller、API 封装、前端页面与菜单路由。
+   - 将资产卡片、采购、验收、入库中供应商/资产名称/规格型号等文本输入逐步升级为真实选择器。
 
-5. **系统管理与权限**
+6. **构建基线修复**
+   - 后端：统一 JWT 依赖实现，修复 Lombok getter/setter 生成问题，处理 `ReportServiceImpl` 编译错误。
+   - 前端：重新安装依赖，补齐 Rollup Windows 可选依赖，让 `npm run build` 可稳定通过。
+
+7. **系统管理与权限**
    - 用户管理、角色管理、菜单权限、按钮权限、部门数据权限。
    - 当前 `SysUser` 仅覆盖轻量级登录和角色字段，尚未形成完整 RBAC。
 
-6. **资产卡片扩展视图**
+8. **资产卡片扩展视图**
    - 按资产类型、使用状态、租出到期、保养提醒、保修到期、使用到期等维度拆分视图。
    - 补齐标签打印、批量补录、导入导出、资产启停、封存、出租/回收等操作。
 
-7. **盘点闭环**
+9. **盘点闭环**
    - 盘点任务明细、扫码盘点、盘盈登记、盘亏处理、盘点报告。
    - 将 `InventoryPlanServiceImpl` 中“根据计划生成盘点任务”的 TODO 落地为可配置任务生成逻辑。
 
@@ -151,11 +163,11 @@
 
 ## 技术指标（2026-06-05）
 
-- 前端页面：29 个 Vue views 页面
-- 后端 Java 文件：82 个
-- Controller：16 个
-- Entity：15 个
-- 数据表：15 张
+- 前端页面：30 个 Vue views 页面
+- 后端 Java 文件：86 个
+- Controller：17 个
+- Entity：16 个
+- 数据表：16 张
 - 后端测试目录：0 个
 - 代码内明确 TODO/待实现：2 处
 - 当前实现形态：轻量级单体应用
@@ -172,9 +184,15 @@
 - 说明：前端完整 build 受当前 `node_modules` 缺少 Rollup Windows 可选依赖阻塞；后端 Maven compile 受既有 Lombok/JWT/ReportService 编译基线问题阻塞。
 
 ### 第二阶段：基础主数据与系统管理（建议 1-2 个迭代，下一阶段）
-- 实现部门、供应商、资产主数据。
+- 部门管理已完成：树形 CRUD、菜单路由、采购/调拨选择器接入。
+- 下一轮建议实现供应商管理，随后实现资产主数据。
 - 实现用户、角色、菜单/按钮权限。
 - 将资产卡片、采购、入库、调拨、借用等页面中的部门/供应商/人员输入改为真实选择器。
+
+### 第二阶段补充：构建基线修复（建议优先穿插）
+- 后端先修 `mvn -q -DskipTests compile`：JWT 依赖口径、Lombok 访问器、`ReportServiceImpl` 编译错误。
+- 前端先修依赖安装问题：重新安装 `node_modules`，确保 Rollup Windows optional dependency 存在，使 `npm run build` 可运行。
+- 构建基线恢复后，再给供应商管理、资产主数据补最小自动化验证。
 
 ### 第三阶段：盘点、预警和报表深化（建议 2 个迭代）
 - 盘点计划自动生成任务、任务明细、扫码盘点、盘点报告。
