@@ -1,5 +1,19 @@
 # 资产管理系统 - 开发进度清单
 
+## 2026-06-05 审计更新
+
+本次重新核对了 `plan/` 文档、`asset-management/TODO.md` 和当前源码。结论是：当前项目已经具备轻量级资产管理系统的主要骨架和多数核心页面，但不能再按旧口径标记为 100% 完成。更准确的当前状态如下：
+
+- 当前实现形态：Spring Boot 3.2 + MyBatis Plus + MySQL + Spring Security/JWT + Vue 3 + Element Plus + Vite 的轻量级单体应用。
+- 当前代码规模：后端 82 个 Java 文件、16 个 Controller、15 个实体、15 张数据库表；前端 29 个 `views` 页面；未发现后端 `src/test` 测试目录。
+- 已完成主干：认证、Dashboard、资产卡片、分类/位置、采购申请、验收、入库、领用退库、借用、调拨、维修、处置、盘点计划/任务/结果、我的资产/部门资产、统计/折旧/处置报表等。
+- 需要修正的旧判断：`AssetService`、`AuthService`、`AssetCategoryService`、`AssetLocationService` 是具体 `@Service` 类，不是缺少 `Impl` 导致不可用。
+- 当前明确未完成点：5 个前端“新建”入口仍提示待实现，2 个后端 TODO 分别是借用逾期通知和盘点计划生成任务。
+- 与 `plan/` 完整蓝图相比仍缺：部门/供应商/资产主数据、系统管理/RBAC、资产预警、IoT 定位、扫码盘点、盘点报告、资产卡片多视图、导入导出深化、通知体系、CI/CD 和自动化测试。
+- 工程治理风险：`frontend/node_modules`、`frontend/dist` 已被纳入 Git 跟踪，根 `.gitignore` 还包含 Markdown 代码块围栏，建议作为下一轮工程化任务处理。
+
+当前更详细、可执行的下一步计划已同步到 `asset-management/TODO.md`。
+
 ## 项目概述
 基于 Spring Boot 3.2 + Vue 3 + Element Plus 的资产管理系统
 

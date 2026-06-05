@@ -2,233 +2,193 @@
 
 ## 项目进度概览
 
-**总体进度：95% (29/31 核心页面)**
+**总体进度：约 86%（25/29 已路由前端页面具备主要流程，4/29 页面存在“新建”入口未完成；若按 plan 完整医院资产管理蓝图计算，仍有多项扩展模块未落地）**
 
-*最后更新时间：2024-06-04*
-
----
-
-## ✅ 已完成模块
-
-### 1. 资产管理模块 (100%)
-- [x] 资产列表 (AssetList.vue)
-- [x] 我的资产 (MyAssets.vue) - P2
-- [x] 部门资产 (DeptAssets.vue) - P2
-- [x] 资产详情 (AssetDetail.vue)
-- [x] 资产创建/编辑 (AssetForm.vue)
-
-### 2. 采购管理模块 (100%)
-- [x] 采购申请列表 (PurchaseRequestList.vue → RequisitionList.vue)
-- [x] 采购清单 (PurchaseList.vue)
-- [x] 入库质检 (StorageList.vue)
-- [x] 验收管理 (AcceptanceList.vue)
-
-### 3. 资产处置模块 (100%)
-- [x] 处置审批列表 (ApprovalList.vue)
-- [x] 出售列表 (SaleList.vue)
-- [x] 报废列表 (ScrapList.vue)
-
-### 4. 资产调拨模块 (100%)
-- [x] 调拨申请列表 (TransferList.vue)
-- [x] 调拨申请详情 (TransferDetail.vue)
-- [x] 调拨申请创建 (TransferForm.vue)
-
-### 5. 库存盘点模块 (100%)
-- [x] 盘点计划列表 (PlanList.vue)
-- [x] 盘点任务列表 (TaskList.vue)
-- [x] 盘点结果录入 (ResultList.vue)
-
-### 6. 报表模块 (100%)
-- [x] 统计报表 (StatisticsReport.vue) - ECharts 图表展示
-- [x] 处置报表 (DisposalReport.vue) - 分页表格 + 统计卡片
-- [x] 折旧报表 (DepreciationReport.vue) - 进度条 + 折旧计算
-
-### 7. 基础数据模块 (67%)
-- [x] 分类管理 (CategoryList.vue)
-- [x] 位置管理 (LocationList.vue)
-- [ ] 部门管理 (DepartmentList.vue) - **缺失**
-- [ ] 供应商管理 (SupplierList.vue) - **缺失**
-
-### 8. 系统管理模块 (0%)
-- [ ] 用户管理 (UserList.vue) - **缺失**
-- [ ] 角色管理 (RoleList.vue) - **缺失**
-- [x] 登录页面 (Login.vue)
-
-### 9. 资产档案模块 (100%)
-- [x] 附件管理 (AttachmentList.vue)
-- [x] 变更管理 (ChangeList.vue)
-- [x] 维修管理 (MaintenanceList.vue)
-
-### 10. 资产领用模块 (100%)
-- [x] 借用列表 (BorrowList.vue)
-- [x] 领用列表 (RequisitionList.vue)
+*最后更新时间：2026-06-05*
 
 ---
 
-## 🔧 后端服务完成情况
+## 本次代码审计结论（2026-06-05）
 
-### 已实现 Service (16个接口，12个实现)
-- [x] AssetService - 资产管理服务 (**实现缺失**)
-- [x] AssetBorrowService - 借用服务
-- [x] AssetDisposalService - 处置服务
-- [x] AssetTransferService - 调拨服务
-- [x] AssetRequisitionService - 领用服务
-- [x] AssetAcceptanceService - 验收服务
-- [x] AssetStorageService - 入库服务
-- [x] AssetMaintenanceService - 维修服务
-- [x] PurchaseRequestService - 采购申请服务
-- [x] InventoryPlanService - 盘点计划服务
-- [x] InventoryTaskService - 盘点任务服务
-- [x] InventoryResultService - 盘点结果服务
-- [x] ReportService - 报表服务
-- [x] AuthService - 认证服务 (**实现缺失**)
-- [x] AssetCategoryService - 分类服务 (**实现缺失，逻辑在 Service 文件中**)
-- [x] AssetLocationService - 位置服务 (**实现缺失，逻辑在 Service 文件中**)
-
-### 已实现 Controller (16个)
-- [x] AssetController
-- [x] AssetBorrowController
-- [x] AssetDisposalController
-- [x] AssetTransferController
-- [x] AssetRequisitionController
-- [x] AssetAcceptanceController
-- [x] AssetStorageController
-- [x] AssetMaintenanceController
-- [x] PurchaseRequestController
-- [x] InventoryPlanController
-- [x] InventoryTaskController
-- [x] InventoryResultController
-- [x] ReportController
-- [x] AuthController
-- [x] AssetCategoryController
-- [x] AssetLocationController
-
-### 数据访问层 (15个)
-- **Mapper**: 11个 (AssetBorrowMapper, AssetCardMapper, AssetCategoryMapper, AssetDisposalMapper, AssetLocationMapper, AssetMaintenanceMapper, AssetTransferMapper, InventoryPlanMapper, InventoryResultMapper, InventoryTaskMapper, SysUserMapper)
-- **Repository**: 4个 (AssetAcceptanceRepository, AssetRequisitionRepository, AssetStorageRepository, PurchaseRequestRepository)
-
-### 实体类 (15个)
-- AssetAcceptance, AssetBorrow, AssetCard, AssetCategory, AssetDisposal, AssetLocation
-- AssetMaintenance, AssetRequisition, AssetStorage, AssetTransfer
-- InventoryPlan, InventoryResult, InventoryTask, PurchaseRequest, SysUser
+- 当前实现是 **Spring Boot 3.2 + MyBatis Plus + MySQL + Spring Security/JWT + Vue 3 + Element Plus + Vite** 的轻量级单体应用，不是 `plan/pd/系统架构设计文档.md` 中描述的微服务、网关、Redis、MQ、IoT、工作流完整架构。
+- 后端已有 82 个 Java 文件，包含 16 个 Controller、15 个实体、15 张数据库表、认证/资产/采购/验收/入库/领用/借用/调拨/维修/处置/盘点/报表等主要服务。
+- 前端已有 29 个 `views` 页面并配置路由，覆盖 Dashboard、登录、资产、采购、验收、入库、档案扩展、领用退库、借用、调拨、处置、盘点、门户和报表。
+- `AssetService`、`AuthService`、`AssetCategoryService`、`AssetLocationService` 当前是具体 `@Service` 类而不是接口，因此此前 TODO 中“AssetServiceImpl/AuthServiceImpl 缺失导致功能不可用”的判断不准确。
+- 代码中仍有 7 个明确未完成点：5 个前端“新建”入口提示待实现，2 个后端 TODO 注释。
+- 当前仓库把 `asset-management/frontend/node_modules` 和 `asset-management/frontend/dist` 纳入了 Git 跟踪；根 `.gitignore` 还包含 Markdown 代码块围栏，建议作为工程治理任务处理。
+- 未发现后端 `src/test` 测试目录，自动化测试体系尚未建立。
 
 ---
 
-## 📋 待办事项 (按优先级排序)
+## 已完成模块
 
-### P0 - 高优先级 (核心功能缺失)
+### 1. 基础框架
+- [x] 用户登录认证（JWT）
+- [x] 路由守卫与主布局
+- [x] 工作台 Dashboard
+- [x] 通用响应封装（Result、PageResult）
+- [x] MyBatis Plus 数据访问层
+- [x] MySQL 初始化脚本
 
-1. **[后端] AssetServiceImpl 实现**
-   - 说明：AssetService 接口已存在但缺少实现类
-   - 影响：资产核心管理功能无法正常工作
-   - 优先级：P0
+### 2. 基础信息
+- [x] 资产分类管理：树形列表、CRUD、子分类
+- [x] 存放位置管理：树形列表、CRUD、子位置
+- [ ] 部门管理：plan 中有需求，当前无表、无后端、无前端页面
+- [ ] 供应商管理：plan 中有采购/资产字段依赖，当前无独立主数据模块
+- [ ] 资产主数据管理：plan 中有完整需求，当前仅以资产卡片承载部分资产信息
 
-2. **[后端] AuthServiceImpl 实现**
-   - 说明：AuthService 接口已存在但缺少实现类
-   - 影响：用户认证和授权功能无法工作
-   - 优先级：P0
+### 3. 资产取得
+- [x] 采购申请：列表、查询、新建/编辑/详情、审批
+- [x] 验收登记：列表、查询、验收流程
+- [x] 资产入库：列表、查询、新增/编辑、确认入库
+- [ ] 验收登记新建入口：`AcceptanceList.vue` 仍提示“新建验收功能待实现”
+- [ ] 采购清单独立流程：plan 中的待采购/已采购/取消/批量恢复等状态流未完整拆出
 
-3. **[前端] 系统管理模块**
-   - 文件：`UserList.vue`, `RoleList.vue`
-   - 说明：用户管理和角色管理页面缺失
-   - 优先级：P0
+### 4. 资产档案
+- [x] 资产卡片列表、表单、详情
+- [x] 附件管理页面
+- [x] 变更记录页面
+- [x] 维修记录页面
+- [ ] 按类型/按状态/临期提醒/标签打印/批量补录等 plan 扩展能力仍待完善
 
-4. **[前端] 基础数据模块补充**
-   - 文件：`DepartmentList.vue`, `SupplierList.vue`
-   - 说明：部门管理和供应商管理页面缺失
-   - 优先级：P0
+### 5. 资产管理
+- [x] 领用退库列表、审批、退库操作
+- [x] 资产借用列表、审批、归还操作
+- [x] 资产调拨列表、表单、详情、审批和完成流程
+- [x] 资产维修申请、审批、维修执行、完成维修
+- [ ] 领用退库新建入口：`RequisitionList.vue` 仍提示“新建领用/退库功能待实现”
+- [ ] 借用新建入口：`BorrowList.vue` 仍提示“新建借用申请功能待实现”
+- [ ] 资产移交、土地房屋使用情况上报、出租/出租回收仍未按 plan 独立实现
 
-### P1 - 中优先级 (功能完善)
+### 6. 资产处置
+- [x] 报废申请列表、审批、删除操作
+- [x] 处置审批列表、审批、执行、完成/取消、详情
+- [x] 出售捐赠列表、审批、执行、完成/取消、详情
+- [ ] 报废新建入口：`ScrapList.vue` 仍提示“新建报废申请功能待实现”
+- [ ] 出售/捐赠新建入口：`SaleList.vue` 仍提示“新建出售/捐赠申请功能待实现”
+- [ ] 报损、置换、残值回收/收益管理仍待完善
 
-5. **[后端] 分类和位置服务重构**
-   - 文件：`AssetCategoryService.java`, `AssetLocationService.java`
-   - 说明：当前业务逻辑直接写在 Service 类中，需要提取到 ServiceImpl
-   - 优先级：P1
+### 7. 资产盘点
+- [x] 盘点计划 CRUD、启用/停用、执行计划入口
+- [x] 盘点任务 CRUD、详情、执行
+- [x] 盘点结果 CRUD、提交、复核、处理、批量导入入口
+- [ ] 扫码盘点、盘点报告、任务明细表、自动生成任务仍待实现
 
-6. **[后端] 资产主数据管理**
-   - 说明：根据需求文档，需要实现资产主数据的新建、修改、删除、启用、停用、预警等功能
-   - 优先级：P1
+### 8. 资产门户
+- [x] 我的资产
+- [x] 部门资产
+- [ ] 管理空间/员工空间概览、资产待办、预警提醒、公告通知仍待实现
 
-7. **[前端] 资产卡片视图**
-   - 说明：需要实现按类型、按使用状态、临期提醒等多种资产卡片视图
-   - 优先级：P1
+### 9. 资产报表
+- [x] 统计报表
+- [x] 折旧报表
+- [x] 处置报表
+- [ ] 资产预警报表、出入库报表、过程监控、运营情况报表仍待实现
 
-### P2 - 低优先级 (优化项)
-
-8. **[后端] 消息通知系统集成**
-   - 文件：`AssetBorrowServiceImpl.java:217`
-   - 说明：归还提醒消息推送功能
-   - 优先级：P2
-
-9. **[后端] 盘点计划自动生成任务**
-   - 文件：`InventoryPlanServiceImpl.java:149`
-   - 说明：定时任务自动生成盘点计划
-   - 优先级：P2
-
-10. **[前端] 报表导出功能**
-    - 说明：支持 Excel/PDF 格式导出
-    - 优先级：P2
-
-11. **[前端] 高级搜索组件封装**
-    - 说明：提取通用搜索表单组件
-    - 优先级：P2
-
-12. **[优化] 数据库索引优化**
-    - 说明：针对常用查询条件添加索引
-    - 优先级：P2
-
----
-
-## 🎯 下一步开发建议
-
-### 推荐开发顺序：
-
-#### 第一阶段：完成核心功能 (P0)
-1. **实现 AssetServiceImpl** - 确保资产核心管理功能完整
-2. **实现 AuthServiceImpl** - 完善用户认证和权限管理
-3. **开发系统管理页面** - UserList.vue, RoleList.vue
-4. **开发基础数据页面** - DepartmentList.vue, SupplierList.vue
-
-#### 第二阶段：功能完善 (P1)
-1. **重构分类和位置服务** - 统一服务层架构
-2. **实现资产主数据管理** - 完善资产基础信息管理
-3. **开发资产卡片视图** - 实现多种维度的资产展示
-
-#### 第三阶段：优化提升 (P2)
-1. **消息通知系统** - 提升用户体验
-2. **定时任务** - 自动化业务流程
-3. **报表导出** - 增强数据分析能力
-4. **组件封装** - 提高代码复用性
-5. **性能优化** - 数据库索引、缓存优化
+### 10. 系统管理与权限
+- [x] 登录认证
+- [ ] 用户管理页面和 CRUD API
+- [ ] 角色管理页面和 CRUD API
+- [ ] RBAC 菜单/按钮级权限、数据权限、操作审计日志
 
 ---
 
-## 📊 技术指标
+## 当前明确待办（按优先级）
 
-- **前端页面总数**: 29 个
-- **后端 Controller**: 16 个
-- **后端 Service**: 16 个接口 / 12 个实现 (75%)
-- **数据访问层**: 15 个 (11 Mapper + 4 Repository)
-- **实体类**: 15 个
-- **API 文档**: 待完善
-- **单元测试**: 待编写
+### P0 - 先修正会影响主流程闭环的问题
+
+1. **补齐 5 个前端“新建”入口**
+   - `frontend/src/views/acquisition/AcceptanceList.vue:190`
+   - `frontend/src/views/management/RequisitionList.vue:185`
+   - `frontend/src/views/management/BorrowList.vue:187`
+   - `frontend/src/views/disposal/ScrapList.vue:180`
+   - `frontend/src/views/disposal/SaleList.vue:302`
+   - 目标：让验收、领用/退库、借用、报废、出售/捐赠均可从当前列表页发起完整单据。
+
+2. **统一并修正 TODO 统计口径**
+   - 根目录 `TODO.md` 和 `asset-management/TODO.md` 曾出现完成率、页面数、服务实现状态互相矛盾的问题。
+   - 目标：以后每次开发后同步更新同一套审计口径。
+
+3. **修复仓库工程治理问题**
+   - 清理已跟踪的 `frontend/node_modules`、`frontend/dist`。
+   - 修正根 `.gitignore` 中的 Markdown 代码块围栏。
+   - 目标：避免依赖和构建产物污染代码审查、clone 速度和提交体积。
+
+### P1 - 对齐 plan 中的核心业务缺口
+
+4. **基础主数据补齐**
+   - 部门管理、供应商管理、资产主数据管理。
+   - 需要新增数据库表、实体、Mapper、Service、Controller、API 封装、前端页面与菜单路由。
+
+5. **系统管理与权限**
+   - 用户管理、角色管理、菜单权限、按钮权限、部门数据权限。
+   - 当前 `SysUser` 仅覆盖轻量级登录和角色字段，尚未形成完整 RBAC。
+
+6. **资产卡片扩展视图**
+   - 按资产类型、使用状态、租出到期、保养提醒、保修到期、使用到期等维度拆分视图。
+   - 补齐标签打印、批量补录、导入导出、资产启停、封存、出租/回收等操作。
+
+7. **盘点闭环**
+   - 盘点任务明细、扫码盘点、盘盈登记、盘亏处理、盘点报告。
+   - 将 `InventoryPlanServiceImpl` 中“根据计划生成盘点任务”的 TODO 落地为可配置任务生成逻辑。
+
+### P2 - 扩展能力与体验优化
+
+8. **通知与预警体系**
+   - 落地 `AssetBorrowServiceImpl` 中借用逾期提醒 TODO。
+   - 补齐保修、保养、库存、报废、位置异常等预警。
+
+9. **资产定位模块**
+   - 位置上报、实时找寻、历史轨迹。
+   - 需要结合 IoT 设备、位置数据表、设备鉴权和地图/轨迹前端。
+
+10. **报表增强**
+   - 出入库报表、运营报表、资产预警报表。
+   - Excel/PDF 导出和更完整的筛选条件。
+
+11. **自动化测试**
+   - 后端：Service/Controller 单元测试与集成测试。
+   - 前端：关键页面组件测试和 API mock 测试。
+
+12. **部署与运维**
+   - Docker 化、环境变量配置、CI/CD、日志与监控。
+   - 当前部署文档存在，但自动化流水线尚未落地。
 
 ---
 
-## ⚠️ 发现的问题
+## 技术指标（2026-06-05）
 
-1. **服务层架构不统一**: 
-   - AssetCategoryService 和 AssetLocationService 的业务逻辑直接写在 Service 类中，而非 ServiceImpl
-   - AssetService 和 AuthService 缺少实现类
-
-2. **前端模块命名不一致**:
-   - 采购申请：PurchaseRequestList.vue → RequisitionList.vue
-   - 处置模块：使用 ApprovalList/SaleList/ScrapList 替代了原有的 DisposalList/DisposalForm/DisposalDetail
-
-3. **缺失功能**:
-   - 系统管理模块（用户管理、角色管理）页面完全缺失
-   - 基础数据模块缺少部门和供应商管理页面
+- 前端页面：29 个 Vue views 页面
+- 后端 Java 文件：82 个
+- Controller：16 个
+- Entity：15 个
+- 数据表：15 张
+- 后端测试目录：0 个
+- 代码内明确 TODO/待实现：7 处
+- 当前实现形态：轻量级单体应用
+- plan 目标形态：医院资产管理完整平台，包含微服务、RBAC、IoT、预警、消息、外部系统集成等能力
 
 ---
 
-*最后更新：2024-06-04*
+## 下一步开发计划
+
+### 第一阶段：主流程闭环修复（建议 1 个迭代）
+- 补齐 5 个列表页新建入口。
+- 为验收、领用/退库、借用、报废、出售/捐赠统一表单校验、提交、编辑、详情与状态刷新体验。
+- 增加最小后端/前端 smoke test 或接口自测脚本。
+
+### 第二阶段：基础主数据与系统管理（建议 1-2 个迭代）
+- 实现部门、供应商、资产主数据。
+- 实现用户、角色、菜单/按钮权限。
+- 将资产卡片、采购、入库、调拨、借用等页面中的部门/供应商/人员输入改为真实选择器。
+
+### 第三阶段：盘点、预警和报表深化（建议 2 个迭代）
+- 盘点计划自动生成任务、任务明细、扫码盘点、盘点报告。
+- 借用逾期、保修/保养/库存/报废预警。
+- 增加出入库、运营、预警报表与导出能力。
+
+### 第四阶段：工程化治理（持续进行）
+- 清理仓库中的 `node_modules`、`dist` 跟踪记录。
+- 修正 `.gitignore`。
+- 建立后端 Maven 测试、前端构建检查和 CI。
+- 按环境拆分配置，完善 Docker/部署脚本。
