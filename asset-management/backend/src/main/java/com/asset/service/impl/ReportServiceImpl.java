@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.time.LocalDate;
@@ -535,7 +536,6 @@ public class ReportServiceImpl implements ReportService {
     /**
      * 统计报表导出 VO
      */
-    @com.alibaba.excel.annotation.ExcelProperty(value = "资产编号", index = 0)
     @lombok.Data
     public static class StatisticsExportVO implements Serializable {
         private static final long serialVersionUID = 1L;

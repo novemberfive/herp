@@ -102,12 +102,12 @@ public class AssetController {
         // 从认证信息中获取当前用户
         String username = UserContextUtil.getCurrentUsername();
         if (username == null) {
-            return Result.error("未登录", null);
+            return Result.error("未登录");
         }
         // 通过用户名查询用户 ID
         SysUser user = sysUserMapper.selectByUsername(username);
         if (user == null) {
-            return Result.error("用户不存在", null);
+            return Result.error("用户不存在");
         }
         return assetService.getMyAssets(user.getId(), pageNum, pageSize);
     }

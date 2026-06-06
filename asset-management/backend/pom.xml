@@ -21,7 +21,8 @@
     <properties>
         <java.version>17</java.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
-        <jwt.version>0.12.3</jwt.version>
+        <java-jwt.version>4.4.0</java-jwt.version>
+        <lombok.version>1.18.38</lombok.version>
         <caffeine.version>3.1.8</caffeine.version>
         <easyexcel.version>3.3.3</easyexcel.version>
         <hutool.version>5.8.24</hutool.version>
@@ -65,21 +66,9 @@
 
         <!-- JWT -->
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${jwt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${jwt.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${jwt.version}</version>
-            <scope>runtime</scope>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${java-jwt.version}</version>
         </dependency>
 
         <!-- Caffeine Cache -->
@@ -107,6 +96,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
 

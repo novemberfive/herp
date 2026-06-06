@@ -233,7 +233,7 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
             
             return Result.success("逾期提醒已发送", null);
         } else {
-            return Result.error("该借用尚未逾期", null);
+            return Result.error("该借用尚未逾期");
         }
     }
 
