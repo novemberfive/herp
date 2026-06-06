@@ -1,5 +1,13 @@
 # 资产管理系统 - 开发进度清单
 
+## 2026-06-06 构建基线修复更新
+
+- 已提交并推送 `e0556f0 Fix backend and frontend build baselines`。
+- 后端 `mvn -q -DskipTests compile` 已恢复通过：统一 JWT 依赖为 Auth0 `java-jwt`，固定 Lombok 版本，修复 `ReportServiceImpl` 导出 VO 编译问题，并补齐 Spring Security authority 与 `Result.error` 调用签名问题。
+- 前端 `npm run build` 已恢复通过：脚本改为直接调用 Vite Node 入口，新增 `.npmrc` 保留 optional dependencies，并补齐当前 Windows 环境缺失的 Rollup/esbuild 原生 optional dependency。
+- 当前工程治理状态：`frontend/node_modules`、`frontend/dist` 仍由 `.gitignore` 排除，构建产物和本机依赖未纳入 Git。
+- 下一阶段建议优先级更新为：供应商管理 + 资产主数据，随后推进系统管理/RBAC、盘点闭环深化、通知与预警体系。
+
 ## 2026-06-05 审计更新
 
 本次重新核对了 `plan/` 文档、`asset-management/TODO.md` 和当前源码。结论是：当前项目已经具备轻量级资产管理系统的主要骨架和多数核心页面，但不能再按旧口径标记为 100% 完成。更准确的当前状态如下：
@@ -10,7 +18,7 @@
 - 需要修正的旧判断：`AssetService`、`AuthService`、`AssetCategoryService`、`AssetLocationService` 是具体 `@Service` 类，不是缺少 `Impl` 导致不可用。
 - 当前明确未完成点：第一阶段 5 个前端“新建”入口已完成；部门管理与工程治理已完成；代码内仍剩 2 个后端 TODO，分别是借用逾期通知和盘点计划生成任务。
 - 与 `plan/` 完整蓝图相比仍缺：供应商/资产主数据、系统管理/RBAC、资产预警、IoT 定位、扫码盘点、盘点报告、资产卡片多视图、导入导出深化、通知体系、CI/CD 和自动化测试。
-- 工程治理进展：`frontend/node_modules`、`frontend/dist` 已取消 Git 跟踪，根 `.gitignore` 已修正；当前更突出的工程问题是后端 Maven compile 与前端 Vite build 的构建基线仍未恢复。
+- 工程治理进展：`frontend/node_modules`、`frontend/dist` 已取消 Git 跟踪，根 `.gitignore` 已修正；后端 Maven compile 与前端 Vite build 构建基线已于 2026-06-06 恢复。
 
 当前更详细、可执行的下一步计划已同步到 `asset-management/TODO.md`。
 
@@ -20,7 +28,7 @@
 - 已完成仓库工程治理：取消跟踪 `asset-management/frontend/node_modules`、`asset-management/frontend/dist`，修正根 `.gitignore`。
 - 已完成部门管理：新增 `sys_department` 表、后端 `/api/departments/**` 树形 CRUD、前端 `DepartmentList.vue` 页面和基础信息菜单入口。
 - 已将采购申请、资产调拨中的部门选择接入真实部门主数据。
-- 下一阶段建议优先：供应商管理 + 资产主数据，并穿插修复后端 Maven/前端 Vite 构建基线。
+- 下一阶段建议优先：供应商管理 + 资产主数据，并继续推进系统管理/RBAC。
 
 ## 2026-06-05 开发更新（主流程闭环）
 
@@ -321,7 +329,7 @@
 
 ## 下一步开发建议
 
-基于 2026-06-05 最新状态，轻量级单体主流程已基本闭环，工程治理和部门主数据也已落地。下一步建议按“先补主数据，再恢复构建基线，再进入系统管理/RBAC”的主线推进。
+基于 2026-06-06 最新状态，轻量级单体主流程已基本闭环，工程治理、部门主数据和构建基线均已落地。下一步建议按“先补主数据，再进入系统管理/RBAC”的主线推进。
 
 ### 🔴 P1 - 下一迭代建议优先
 
@@ -334,9 +342,9 @@
    - 新增资产主数据表和页面，维护资产名称、规格型号、分类、品牌、单位、默认价格、保修期等模板信息。
    - 接入采购申请和资产卡片表单，让常用资产从文本录入升级为选择器。
 
-3. **构建基线修复**
-   - 后端修复 `mvn -q -DskipTests compile`：统一 JWT 依赖口径，处理 Lombok getter/setter 生成问题，修复 `ReportServiceImpl` 编译错误。
-   - 前端重新安装依赖并补齐 Rollup Windows optional dependency，恢复 `npm run build`。
+3. **构建基线修复** ✅
+   - 后端 `mvn -q -DskipTests compile` 已恢复通过。
+   - 前端 `npm run build` 已恢复通过。
 
 ### 🟡 P2 - 主数据稳定后推进
 

@@ -2,9 +2,9 @@
 
 ## 项目进度概览
 
-**总体进度：约 90%（30/30 已路由前端页面不再存在明确“新建待实现”入口；部门管理与仓库工程治理已完成；若按 plan 完整医院资产管理蓝图计算，仍有多项扩展模块未落地）**
+**总体进度：约 90%（30/30 已路由前端页面不再存在明确“新建待实现”入口；部门管理、仓库工程治理与构建基线已完成；若按 plan 完整医院资产管理蓝图计算，仍有多项扩展模块未落地）**
 
-*最后更新时间：2026-06-05*
+*最后更新时间：2026-06-06*
 
 ---
 
@@ -18,7 +18,7 @@
 - 2026-06-05 已完成第二阶段前置任务：清理 `frontend/node_modules`、`frontend/dist` 的 Git 跟踪，修正根 `.gitignore`，新增部门管理后端表/接口/前端页面，并将采购申请、资产调拨的部门选择接入真实部门主数据。
 - 代码中仍有 2 个明确后端 TODO 注释：借用逾期通知集成、盘点计划生成任务。
 - 当前仓库已不再跟踪 `asset-management/frontend/node_modules` 和 `asset-management/frontend/dist`；后续依赖和构建产物会被根 `.gitignore` 排除。
-- 当前构建基线仍需单独治理：后端 Maven compile 受既有 JWT 依赖、Lombok getter/setter、`ReportServiceImpl` 问题阻塞；前端完整 build 受 Rollup Windows 可选依赖缺失阻塞。
+- 2026-06-06 已完成构建基线修复：后端 `mvn -q -DskipTests compile` 已通过，前端 `npm run build` 已通过；JWT 依赖口径、Lombok 版本、`ReportServiceImpl` 编译问题、Spring Security authority 类型、`Result.error` 调用签名和前端 Rollup/esbuild optional dependency 问题已处理。
 - 未发现后端 `src/test` 测试目录，自动化测试体系尚未建立。
 
 ---
@@ -121,9 +121,10 @@
    - 需要新增数据库表、实体、Mapper、Service、Controller、API 封装、前端页面与菜单路由。
    - 将资产卡片、采购、验收、入库中供应商/资产名称/规格型号等文本输入逐步升级为真实选择器。
 
-6. **构建基线修复**
-   - 后端：统一 JWT 依赖实现，修复 Lombok getter/setter 生成问题，处理 `ReportServiceImpl` 编译错误。
-   - 前端：重新安装依赖，补齐 Rollup Windows 可选依赖，让 `npm run build` 可稳定通过。
+6. **构建基线修复** ✅
+   - 后端：`mvn -q -DskipTests compile` 已恢复通过。
+   - 前端：`npm run build` 已恢复通过。
+   - 提交：`e0556f0 Fix backend and frontend build baselines`
 
 7. **系统管理与权限**
    - 用户管理、角色管理、菜单权限、按钮权限、部门数据权限。
@@ -181,7 +182,7 @@
 - 已补齐 5 个列表页新建入口。
 - 已为验收、领用/退库、借用、报废、出售/捐赠补齐表单校验、提交、编辑、详情与状态刷新体验。
 - 已完成最小验证：5 个 Vue SFC 均通过 `@vue/compiler-sfc` script/template 解析，`git diff --check` 通过。
-- 说明：前端完整 build 受当前 `node_modules` 缺少 Rollup Windows 可选依赖阻塞；后端 Maven compile 受既有 Lombok/JWT/ReportService 编译基线问题阻塞。
+- 说明：后续构建基线问题已在 2026-06-06 单独修复，后端 compile 和前端 build 均已通过。
 
 ### 第二阶段：基础主数据与系统管理（建议 1-2 个迭代，下一阶段）
 - 部门管理已完成：树形 CRUD、菜单路由、采购/调拨选择器接入。
@@ -189,10 +190,10 @@
 - 实现用户、角色、菜单/按钮权限。
 - 将资产卡片、采购、入库、调拨、借用等页面中的部门/供应商/人员输入改为真实选择器。
 
-### 第二阶段补充：构建基线修复（建议优先穿插）
-- 后端先修 `mvn -q -DskipTests compile`：JWT 依赖口径、Lombok 访问器、`ReportServiceImpl` 编译错误。
-- 前端先修依赖安装问题：重新安装 `node_modules`，确保 Rollup Windows optional dependency 存在，使 `npm run build` 可运行。
-- 构建基线恢复后，再给供应商管理、资产主数据补最小自动化验证。
+### 第二阶段补充：构建基线修复 ✅ 已完成
+- 后端 `mvn -q -DskipTests compile` 已通过。
+- 前端 `npm run build` 已通过。
+- 后续给供应商管理、资产主数据补功能时，应继续保持这两条命令作为最小构建验证。
 
 ### 第三阶段：盘点、预警和报表深化（建议 2 个迭代）
 - 盘点计划自动生成任务、任务明细、扫码盘点、盘点报告。
