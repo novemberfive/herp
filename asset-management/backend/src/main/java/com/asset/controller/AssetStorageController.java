@@ -25,7 +25,7 @@ public class AssetStorageController {
      * 分页查询资产入库列表
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:storage')")
     public Result<PageResult<AssetStorage>> getPageList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -37,7 +37,7 @@ public class AssetStorageController {
      * 根据 ID 查询资产入库
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:storage')")
     public Result<AssetStorage> getById(@PathVariable Long id) {
         return assetStorageService.getById(id);
     }
@@ -46,7 +46,7 @@ public class AssetStorageController {
      * 创建资产入库
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:storage:create')")
     public Result<Void> create(@Valid @RequestBody AssetStorage storage) {
         return assetStorageService.create(storage);
     }
@@ -55,7 +55,7 @@ public class AssetStorageController {
      * 更新资产入库
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:storage:edit')")
     public Result<Void> update(@Valid @RequestBody AssetStorage storage) {
         return assetStorageService.update(storage);
     }
@@ -64,7 +64,7 @@ public class AssetStorageController {
      * 删除资产入库
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:storage:delete')")
     public Result<Void> delete(@PathVariable Long id) {
         return assetStorageService.delete(id);
     }
@@ -73,7 +73,7 @@ public class AssetStorageController {
      * 确认入库
      */
     @PostMapping("/{id}/confirm")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:storage:confirm')")
     public Result<Void> confirm(@PathVariable Long id) {
         return assetStorageService.confirm(id);
     }

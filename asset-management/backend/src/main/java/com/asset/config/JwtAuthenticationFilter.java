@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,15 +51,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
                 String username = decodedJWT.getClaim("username").asString();
                 String role = decodedJWT.getClaim("role").asString();
-                
-                List<SimpleGrantedAuthority> authorities = List.of(
-                        new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())
-                );
+                List<String> permissions = decodedJWT.getClaim("permissions").asList(String.class);
+
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                if (permissions != null) {
+                    permissions.stream()
+                            .filter(StringUtils::hasText)
+                            .map(SimpleGrantedAuthority::new)
+                            .forEach(authorities::add);
+                }
                 
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(username, null, authorities);
                 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                request.setAttribute("username", username);
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");

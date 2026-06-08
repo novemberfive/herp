@@ -34,7 +34,7 @@ public class SysDepartmentController {
      * GET /api/departments/list
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:department')")
     public Result<List<SysDepartment>> getDepartmentList() {
         return sysDepartmentService.getDepartmentList();
     }
@@ -44,7 +44,7 @@ public class SysDepartmentController {
      * GET /api/departments/parent/{parentId}
      */
     @GetMapping("/parent/{parentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:department')")
     public Result<List<SysDepartment>> getDepartmentByParentId(@PathVariable Long parentId) {
         return sysDepartmentService.getDepartmentByParentId(parentId);
     }
@@ -54,7 +54,7 @@ public class SysDepartmentController {
      * GET /api/departments/top-level
      */
     @GetMapping("/top-level")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:department')")
     public Result<List<SysDepartment>> getTopLevelDepartments() {
         return sysDepartmentService.getTopLevelDepartments();
     }
@@ -64,7 +64,7 @@ public class SysDepartmentController {
      * POST /api/departments
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:department:create')")
     public Result<Void> createDepartment(@Valid @RequestBody SysDepartment department) {
         return sysDepartmentService.createDepartment(department);
     }
@@ -74,7 +74,7 @@ public class SysDepartmentController {
      * PUT /api/departments
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:department:edit')")
     public Result<Void> updateDepartment(@Valid @RequestBody SysDepartment department) {
         return sysDepartmentService.updateDepartment(department);
     }
@@ -84,7 +84,7 @@ public class SysDepartmentController {
      * DELETE /api/departments/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('basic:department:delete')")
     public Result<Void> deleteDepartment(@PathVariable Long id) {
         return sysDepartmentService.deleteDepartment(id);
     }

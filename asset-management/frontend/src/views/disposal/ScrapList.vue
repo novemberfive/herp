@@ -35,7 +35,7 @@
 
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('disposal:scrap:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建报废申请
         </el-button>
@@ -69,9 +69,9 @@
         <el-table-column label="操作" fixed="right" width="300">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.approveStatus === 0">编辑</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.approveStatus === 0">审批</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.approveStatus === 0">删除</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:scrap:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:scrap:approve')" link type="success" @click="handleApprove(row)">审批</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:scrap:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -218,8 +218,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const formDialogVisible = ref(false)

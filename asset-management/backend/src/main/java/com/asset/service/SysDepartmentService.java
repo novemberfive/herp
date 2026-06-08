@@ -18,9 +18,11 @@ import java.util.List;
 public class SysDepartmentService {
 
     private final SysDepartmentMapper sysDepartmentMapper;
+    private final OperationLogService operationLogService;
 
-    public SysDepartmentService(SysDepartmentMapper sysDepartmentMapper) {
+    public SysDepartmentService(SysDepartmentMapper sysDepartmentMapper, OperationLogService operationLogService) {
         this.sysDepartmentMapper = sysDepartmentMapper;
+        this.operationLogService = operationLogService;
     }
 
     /**
@@ -76,7 +78,9 @@ public class SysDepartmentService {
         }
 
         sysDepartmentMapper.insert(department);
-        return Result.success("部门创建成功", null);
+        Result<Void> result = Result.success("部门创建成功", null);
+        operationLogService.record("BASIC", "CREATE_DEPARTMENT", "sys_department", String.valueOf(department.getId()), "创建部门：" + department.getDeptName(), result);
+        return result;
     }
 
     /**
@@ -106,7 +110,9 @@ public class SysDepartmentService {
         }
 
         sysDepartmentMapper.updateById(department);
-        return Result.success("部门更新成功", null);
+        Result<Void> result = Result.success("部门更新成功", null);
+        operationLogService.record("BASIC", "UPDATE_DEPARTMENT", "sys_department", String.valueOf(department.getId()), "更新部门：" + department.getDeptName(), result);
+        return result;
     }
 
     /**
@@ -130,6 +136,8 @@ public class SysDepartmentService {
 
         department.setDeleted(1);
         sysDepartmentMapper.updateById(department);
-        return Result.success("部门删除成功", null);
+        Result<Void> result = Result.success("部门删除成功", null);
+        operationLogService.record("BASIC", "DELETE_DEPARTMENT", "sys_department", String.valueOf(department.getId()), "删除部门：" + department.getDeptName(), result);
+        return result;
     }
 }

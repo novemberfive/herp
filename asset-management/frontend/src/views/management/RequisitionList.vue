@@ -35,7 +35,7 @@
 
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('management:requisition:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建领用/退库
         </el-button>
@@ -77,10 +77,10 @@
         <el-table-column label="操作" fixed="right" width="320">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.status === 0">编辑</el-button>
-            <el-button link type="success" @click="handleSubmit(row)" v-if="row.status === 0">提交</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.status === 1">审批</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.status === 0">删除</el-button>
+            <el-button link type="primary" @click="handleEdit(row)" v-if="row.status === 0 && userStore.hasPermission('management:requisition:edit')">编辑</el-button>
+            <el-button link type="success" @click="handleSubmit(row)" v-if="row.status === 0 && userStore.hasPermission('management:requisition:submit')">提交</el-button>
+            <el-button link type="success" @click="handleApprove(row)" v-if="row.status === 1 && userStore.hasPermission('management:requisition:approve')">审批</el-button>
+            <el-button link type="danger" @click="handleDelete(row)" v-if="row.status === 0 && userStore.hasPermission('management:requisition:delete')">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -195,7 +195,13 @@
       </el-form>
       <template #footer>
         <el-button @click="formDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
+        <el-button
+          v-if="!form.id ? userStore.hasPermission('management:requisition:create') : userStore.hasPermission('management:requisition:edit')"
+          type="primary"
+          @click="submitForm"
+        >
+          确定
+        </el-button>
       </template>
     </el-dialog>
 
@@ -207,8 +213,8 @@
       </el-form>
       <template #footer>
         <el-button @click="approveDialogVisible = false">取消</el-button>
-        <el-button type="success" @click="confirmApprove(true)">通过</el-button>
-        <el-button type="danger" @click="confirmApprove(false)">拒绝</el-button>
+        <el-button v-if="userStore.hasPermission('management:requisition:approve')" type="success" @click="confirmApprove(true)">通过</el-button>
+        <el-button v-if="userStore.hasPermission('management:requisition:approve')" type="danger" @click="confirmApprove(false)">拒绝</el-button>
       </template>
     </el-dialog>
 
@@ -249,8 +255,10 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const formDialogVisible = ref(false)

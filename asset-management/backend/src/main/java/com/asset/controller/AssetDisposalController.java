@@ -28,7 +28,7 @@ public class AssetDisposalController {
      * GET /api/asset/disposal/list?pageNum=1&pageSize=10&disposalType=1&approveStatus=1&disposalStatus=1
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap', 'disposal:approval', 'disposal:sale')")
     public Result<Map<String, Object>> getDisposalList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -47,7 +47,7 @@ public class AssetDisposalController {
      * GET /api/asset/disposal/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap', 'disposal:approval', 'disposal:sale')")
     public Result<AssetDisposal> getDisposalById(@PathVariable Long id) {
         return assetDisposalService.getDisposalById(id);
     }
@@ -57,7 +57,7 @@ public class AssetDisposalController {
      * POST /api/asset/disposal
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap:create', 'disposal:sale:create')")
     public Result<Void> createDisposal(@Valid @RequestBody AssetDisposal disposal) {
         return assetDisposalService.createDisposal(disposal);
     }
@@ -67,7 +67,7 @@ public class AssetDisposalController {
      * PUT /api/asset/disposal
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap:edit', 'disposal:sale:edit')")
     public Result<Void> updateDisposal(@Valid @RequestBody AssetDisposal disposal) {
         return assetDisposalService.updateDisposal(disposal);
     }
@@ -77,7 +77,7 @@ public class AssetDisposalController {
      * DELETE /api/asset/disposal/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap:delete', 'disposal:sale:delete')")
     public Result<Void> deleteDisposal(@PathVariable Long id) {
         return assetDisposalService.deleteDisposal(id);
     }
@@ -87,7 +87,7 @@ public class AssetDisposalController {
      * POST /api/asset/disposal/{id}/approve?approverId=1&approverName=张三&approveStatus=1&approveRemark=同意
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:scrap:approve', 'disposal:sale:approve', 'disposal:approval:approve')")
     public Result<Void> approveDisposal(
             @PathVariable Long id,
             @RequestParam Long approverId,
@@ -102,7 +102,7 @@ public class AssetDisposalController {
      * POST /api/asset/disposal/{id}/execute?disposalMethod=1&actualValue=1000.00&buyerName=xxx&buyerContact=xxx
      */
     @PostMapping("/{id}/execute")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:sale:execute', 'disposal:approval:execute')")
     public Result<Void> executeDisposal(
             @PathVariable Long id,
             @RequestParam Integer disposalMethod,
@@ -117,7 +117,7 @@ public class AssetDisposalController {
      * POST /api/asset/disposal/{id}/complete
      */
     @PostMapping("/{id}/complete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:sale:complete', 'disposal:approval:complete')")
     public Result<Void> completeDisposal(@PathVariable Long id) {
         return assetDisposalService.completeDisposal(id);
     }
@@ -127,7 +127,7 @@ public class AssetDisposalController {
      * POST /api/asset/disposal/{id}/cancel?reason=xxx
      */
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAnyAuthority('disposal:sale:cancel', 'disposal:approval:cancel')")
     public Result<Void> cancelDisposal(
             @PathVariable Long id,
             @RequestParam(required = false) String reason) {

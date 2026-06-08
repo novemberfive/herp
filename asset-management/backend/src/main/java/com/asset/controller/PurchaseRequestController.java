@@ -25,7 +25,7 @@ public class PurchaseRequestController {
      * 分页查询采购申请列表
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:purchase')")
     public Result<PageResult<PurchaseRequest>> getPageList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -37,7 +37,7 @@ public class PurchaseRequestController {
      * 根据 ID 查询采购申请
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:purchase')")
     public Result<PurchaseRequest> getById(@PathVariable Long id) {
         return purchaseRequestService.getById(id);
     }
@@ -46,7 +46,7 @@ public class PurchaseRequestController {
      * 创建采购申请
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:create')")
     public Result<Void> create(@Valid @RequestBody PurchaseRequest request) {
         return purchaseRequestService.create(request);
     }
@@ -55,7 +55,7 @@ public class PurchaseRequestController {
      * 更新采购申请
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:edit')")
     public Result<Void> update(@Valid @RequestBody PurchaseRequest request) {
         return purchaseRequestService.update(request);
     }
@@ -64,7 +64,7 @@ public class PurchaseRequestController {
      * 删除采购申请
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:delete')")
     public Result<Void> delete(@PathVariable Long id) {
         return purchaseRequestService.delete(id);
     }
@@ -73,7 +73,7 @@ public class PurchaseRequestController {
      * 提交审批
      */
     @PostMapping("/{id}/submit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:submit')")
     public Result<Void> submit(@PathVariable Long id) {
         return purchaseRequestService.submit(id);
     }
@@ -82,7 +82,7 @@ public class PurchaseRequestController {
      * 审批通过
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:approve')")
     public Result<Void> approve(@PathVariable Long id, @RequestParam String opinion) {
         return purchaseRequestService.approve(id, opinion);
     }
@@ -91,7 +91,7 @@ public class PurchaseRequestController {
      * 审批拒绝
      */
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:purchase:approve')")
     public Result<Void> reject(@PathVariable Long id, @RequestParam String opinion) {
         return purchaseRequestService.reject(id, opinion);
     }

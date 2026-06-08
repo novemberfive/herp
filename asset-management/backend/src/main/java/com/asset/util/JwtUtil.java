@@ -11,8 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * JWT 工具类
@@ -32,11 +31,7 @@ public class JwtUtil {
     /**
      * 生成 Token
      */
-    public String generateToken(String username, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("username", username);
-        claims.put("role", role);
-        
+    public String generateToken(String username, String role, List<String> permissions) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expiration);
         
@@ -44,6 +39,7 @@ public class JwtUtil {
                 .withSubject(username)
                 .withClaim("username", username)
                 .withClaim("role", role)
+                .withClaim("permissions", permissions)
                 .withIssuedAt(now)
                 .withExpiresAt(expireDate)
                 .sign(Algorithm.HMAC512(secret));
@@ -52,11 +48,7 @@ public class JwtUtil {
     /**
      * 生成刷新 Token
      */
-    public String generateRefreshToken(String username, String role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("username", username);
-        claims.put("role", role);
-        
+    public String generateRefreshToken(String username, String role, List<String> permissions) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + refreshExpiration);
         
@@ -64,6 +56,7 @@ public class JwtUtil {
                 .withSubject(username)
                 .withClaim("username", username)
                 .withClaim("role", role)
+                .withClaim("permissions", permissions)
                 .withIssuedAt(now)
                 .withExpiresAt(expireDate)
                 .sign(Algorithm.HMAC512(secret));

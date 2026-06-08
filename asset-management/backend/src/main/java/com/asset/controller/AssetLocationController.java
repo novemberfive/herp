@@ -27,7 +27,7 @@ public class AssetLocationController {
      * GET /api/locations/list
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:location')")
     public Result<List<AssetLocation>> getLocationList() {
         return assetLocationService.getLocationList();
     }
@@ -37,7 +37,7 @@ public class AssetLocationController {
      * GET /api/locations/parent/{parentId}
      */
     @GetMapping("/parent/{parentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:location')")
     public Result<List<AssetLocation>> getLocationByParentId(@PathVariable Long parentId) {
         return assetLocationService.getLocationByParentId(parentId);
     }
@@ -47,7 +47,7 @@ public class AssetLocationController {
      * GET /api/locations/top-level
      */
     @GetMapping("/top-level")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:location')")
     public Result<List<AssetLocation>> getTopLevelLocations() {
         return assetLocationService.getTopLevelLocations();
     }
@@ -57,7 +57,7 @@ public class AssetLocationController {
      * POST /api/locations
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:location:create')")
     public Result<Void> createLocation(@Valid @RequestBody AssetLocation location) {
         return assetLocationService.createLocation(location);
     }
@@ -67,7 +67,7 @@ public class AssetLocationController {
      * PUT /api/locations
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:location:edit')")
     public Result<Void> updateLocation(@Valid @RequestBody AssetLocation location) {
         return assetLocationService.updateLocation(location);
     }
@@ -77,7 +77,7 @@ public class AssetLocationController {
      * DELETE /api/locations/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('basic:location:delete')")
     public Result<Void> deleteLocation(@PathVariable Long id) {
         return assetLocationService.deleteLocation(id);
     }

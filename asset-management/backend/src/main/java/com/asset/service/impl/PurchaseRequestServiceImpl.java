@@ -5,6 +5,8 @@ import com.asset.dto.Result;
 import com.asset.entity.PurchaseRequest;
 import com.asset.repository.PurchaseRequestRepository;
 import com.asset.repository.SysUserMapper;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.asset.service.PurchaseRequestService;
 import com.asset.util.UserContextUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,10 +25,17 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final SysUserMapper sysUserMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
     
-    public PurchaseRequestServiceImpl(PurchaseRequestRepository purchaseRequestRepository, SysUserMapper sysUserMapper) {
+    public PurchaseRequestServiceImpl(PurchaseRequestRepository purchaseRequestRepository,
+                                      SysUserMapper sysUserMapper,
+                                      DataPermissionService dataPermissionService,
+                                      OperationLogService operationLogService) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.sysUserMapper = sysUserMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
     
     @Override
@@ -50,6 +59,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
         
         wrapper.eq(PurchaseRequest::getDeleted, 0);
+        Result<PageResult<PurchaseRequest>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         wrapper.orderByDesc(PurchaseRequest::getCreateTime);
         
         Page<PurchaseRequest> resultPage = purchaseRequestRepository.selectPage(page, wrapper);
@@ -69,6 +82,9 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         if (request == null || request.getDeleted() == 1) {
             return Result.error("采购申请不存在");
         }
+        if (!canAccessDepartment(request.getDepartmentId())) {
+            return Result.forbidden("无权查看该采购申请");
+        }
         return Result.success(request);
     }
     
@@ -79,7 +95,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         request.setApplyDate(LocalDateTime.now());
         request.setStatus(0);
         purchaseRequestRepository.insert(request);
-        return Result.success("采购申请创建成功", null);
+        Result<Void> result = Result.success("采购申请创建成功", null);
+        operationLogService.record("ACQUISITION", "CREATE_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "创建采购申请：" + request.getRequestNo(), result);
+        return result;
     }
     
     @Override
@@ -94,7 +113,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
         request.setUpdateTime(LocalDateTime.now());
         purchaseRequestRepository.updateById(request);
-        return Result.success("采购申请更新成功", null);
+        Result<Void> result = Result.success("采购申请更新成功", null);
+        operationLogService.record("ACQUISITION", "UPDATE_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "更新采购申请：" + existing.getRequestNo(), result);
+        return result;
     }
     
     @Override
@@ -106,7 +128,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
         request.setDeleted(1);
         purchaseRequestRepository.updateById(request);
-        return Result.success("采购申请删除成功", null);
+        Result<Void> result = Result.success("采购申请删除成功", null);
+        operationLogService.record("ACQUISITION", "DELETE_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "删除采购申请：" + request.getRequestNo(), result);
+        return result;
     }
     
     @Override
@@ -122,7 +147,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         request.setStatus(1);
         request.setUpdateTime(LocalDateTime.now());
         purchaseRequestRepository.updateById(request);
-        return Result.success("采购申请已提交审批", null);
+        Result<Void> result = Result.success("采购申请已提交审批", null);
+        operationLogService.record("ACQUISITION", "SUBMIT_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "提交采购申请：" + request.getRequestNo(), result);
+        return result;
     }
     
     @Override
@@ -148,7 +176,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         request.setApproveTime(LocalDateTime.now());
         request.setUpdateTime(LocalDateTime.now());
         purchaseRequestRepository.updateById(request);
-        return Result.success("采购申请审批通过", null);
+        Result<Void> result = Result.success("采购申请审批通过", null);
+        operationLogService.record("ACQUISITION", "APPROVE_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "审批通过采购申请：" + request.getRequestNo(), result);
+        return result;
     }
     
     @Override
@@ -174,7 +205,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         request.setApproveTime(LocalDateTime.now());
         request.setUpdateTime(LocalDateTime.now());
         purchaseRequestRepository.updateById(request);
-        return Result.success("采购申请审批拒绝", null);
+        Result<Void> result = Result.success("采购申请审批拒绝", null);
+        operationLogService.record("ACQUISITION", "REJECT_PURCHASE_REQUEST", "purchase_request",
+            String.valueOf(request.getId()), "审批拒绝采购申请：" + request.getRequestNo(), result);
+        return result;
     }
     
     /**
@@ -191,5 +225,22 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     private String generateRequestNo() {
         return "PR" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) 
                + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    }
+
+    private Result<PageResult<PurchaseRequest>> applyDepartmentScope(LambdaQueryWrapper<PurchaseRequest> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看采购申请");
+        }
+        wrapper.eq(PurchaseRequest::getDepartmentId, departmentId);
+        return null;
+    }
+
+    private boolean canAccessDepartment(Long departmentId) {
+        return !dataPermissionService.shouldRestrictToOwnDepartment()
+            || dataPermissionService.canAccessDepartment(departmentId);
     }
 }

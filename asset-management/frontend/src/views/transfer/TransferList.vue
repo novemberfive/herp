@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>资产调拨</span>
-          <el-button type="primary" @click="handleCreate">
+          <el-button v-if="userStore.hasPermission('management:transfer:create')" type="primary" @click="handleCreate">
             <el-icon><Plus /></el-icon>
             新增调拨
           </el-button>
@@ -65,7 +65,7 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
             <el-button 
-              v-if="row.approveStatus === 0" 
+              v-if="row.approveStatus === 0 && userStore.hasPermission('management:transfer:approve')"
               link 
               type="warning" 
               @click="handleApprove(row)"
@@ -73,7 +73,7 @@
               审批
             </el-button>
             <el-button 
-              v-if="row.approveStatus === 1 && row.transferStatus === 1" 
+              v-if="row.approveStatus === 1 && row.transferStatus === 1 && userStore.hasPermission('management:transfer:complete')"
               link 
               type="success" 
               @click="handleComplete(row)"
@@ -81,7 +81,7 @@
               完成
             </el-button>
             <el-button 
-              v-if="row.transferStatus !== 2" 
+              v-if="row.transferStatus !== 2 && userStore.hasPermission('management:transfer:cancel')"
               link 
               type="danger" 
               @click="handleCancel(row)"
@@ -111,9 +111,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/store/user'
 import { getTransferList, deleteTransfer, approveTransfer, completeTransfer, cancelTransfer } from '@/api/transfer'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 

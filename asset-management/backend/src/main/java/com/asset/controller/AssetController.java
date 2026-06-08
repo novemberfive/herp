@@ -32,7 +32,7 @@ public class AssetController {
      * GET /api/assets/list?pageNum=1&pageSize=10&status=1
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('asset:list')")
     public Result<Map<String, Object>> getAssetList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -45,7 +45,7 @@ public class AssetController {
      * GET /api/assets/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('asset:list')")
     public Result<AssetCard> getAssetById(@PathVariable Long id) {
         return assetService.getAssetById(id);
     }
@@ -55,7 +55,7 @@ public class AssetController {
      * POST /api/assets
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('asset:create')")
     public Result<Void> createAsset(@Valid @RequestBody AssetCard asset) {
         return assetService.createAsset(asset);
     }
@@ -65,7 +65,7 @@ public class AssetController {
      * PUT /api/assets
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('asset:edit')")
     public Result<Void> updateAsset(@Valid @RequestBody AssetCard asset) {
         return assetService.updateAsset(asset);
     }
@@ -75,7 +75,7 @@ public class AssetController {
      * DELETE /api/assets/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('asset:delete')")
     public Result<Void> deleteAsset(@PathVariable Long id) {
         return assetService.deleteAsset(id);
     }
@@ -85,7 +85,7 @@ public class AssetController {
      * GET /api/assets/stats
      */
     @GetMapping("/stats")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('asset:list')")
     public Result<Map<String, Object>> getStats() {
         return assetService.getStats();
     }
@@ -95,7 +95,7 @@ public class AssetController {
      * GET /api/assets/my/list?pageNum=1&pageSize=10
      */
     @GetMapping("/my/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('portal:my-assets')")
     public Result<Map<String, Object>> getMyAssets(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -117,7 +117,7 @@ public class AssetController {
      * GET /api/assets/dept/list?departmentId=1&pageNum=1&pageSize=10
      */
     @GetMapping("/dept/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('portal:dept-assets')")
     public Result<Map<String, Object>> getDeptAssets(
             @RequestParam Long departmentId,
             @RequestParam(defaultValue = "1") Integer pageNum,

@@ -34,7 +34,7 @@
     <!-- 列表区 -->
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('archive:maintenance:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新增维保申请
         </el-button>
@@ -88,11 +88,11 @@
         <el-table-column label="操作" fixed="right" width="320">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.approveStatus === 0">编辑</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.approveStatus === 0">审批</el-button>
-            <el-button link type="warning" @click="handleStart(row)" v-if="row.approveStatus === 1 && row.maintenanceResult === 0">开始维修</el-button>
-            <el-button link type="success" @click="handleComplete(row)" v-if="row.maintenanceResult === 1">完成维修</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button link type="primary" @click="handleEdit(row)" v-if="row.approveStatus === 0 && userStore.hasPermission('archive:maintenance:edit')">编辑</el-button>
+            <el-button link type="success" @click="handleApprove(row)" v-if="row.approveStatus === 0 && userStore.hasPermission('archive:maintenance:approve')">审批</el-button>
+            <el-button link type="warning" @click="handleStart(row)" v-if="row.approveStatus === 1 && row.maintenanceResult === 0 && userStore.hasPermission('archive:maintenance:start')">开始维修</el-button>
+            <el-button link type="success" @click="handleComplete(row)" v-if="row.maintenanceResult === 1 && userStore.hasPermission('archive:maintenance:complete')">完成维修</el-button>
+            <el-button link type="danger" @click="handleDelete(row)" v-if="userStore.hasPermission('archive:maintenance:delete')">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -205,7 +205,14 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitting">确定</el-button>
+        <el-button
+          v-if="!formData.id ? userStore.hasPermission('archive:maintenance:create') : userStore.hasPermission('archive:maintenance:edit')"
+          type="primary"
+          @click="handleSubmit"
+          :loading="submitting"
+        >
+          确定
+        </el-button>
       </template>
     </el-dialog>
 
@@ -283,7 +290,7 @@
       </el-form>
       <template #footer>
         <el-button @click="approveDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleApproveSubmit" :loading="submitting">确定</el-button>
+        <el-button v-if="userStore.hasPermission('archive:maintenance:approve')" type="primary" @click="handleApproveSubmit" :loading="submitting">确定</el-button>
       </template>
     </el-dialog>
 
@@ -309,7 +316,7 @@
       </el-form>
       <template #footer>
         <el-button @click="startDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleStartSubmit" :loading="submitting">确定</el-button>
+        <el-button v-if="userStore.hasPermission('archive:maintenance:start')" type="primary" @click="handleStartSubmit" :loading="submitting">确定</el-button>
       </template>
     </el-dialog>
 
@@ -353,7 +360,7 @@
       </el-form>
       <template #footer>
         <el-button @click="completeDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleCompleteSubmit" :loading="submitting">确定</el-button>
+        <el-button v-if="userStore.hasPermission('archive:maintenance:complete')" type="primary" @click="handleCompleteSubmit" :loading="submitting">确定</el-button>
       </template>
     </el-dialog>
   </div>
@@ -363,6 +370,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import { 
   getMaintenanceList, 
   getMaintenanceById,
@@ -375,6 +383,7 @@ import {
   cancelMaintenance
 } from '@/api/basic'
 
+const userStore = useUserStore()
 // 查询表单
 const queryForm = reactive({
   assetCode: '',

@@ -23,7 +23,7 @@
 
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('basic:department:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新增部门
         </el-button>
@@ -69,9 +69,9 @@
         <el-table-column label="操作" fixed="right" width="280">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="primary" @click="handleAddChild(row)">子部门</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="userStore.hasPermission('basic:department:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="userStore.hasPermission('basic:department:create')" link type="primary" @click="handleAddChild(row)">子部门</el-button>
+            <el-button v-if="userStore.hasPermission('basic:department:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -156,12 +156,15 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Folder, FolderOpened } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import {
   getDepartmentList,
   createDepartment,
   updateDepartment,
   deleteDepartment
 } from '@/api/basic'
+
+const userStore = useUserStore()
 
 const queryForm = reactive({
   deptName: '',

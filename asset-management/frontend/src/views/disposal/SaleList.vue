@@ -43,7 +43,7 @@
     <!-- 列表区 -->
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('disposal:sale:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建出售/捐赠申请
         </el-button>
@@ -99,12 +99,12 @@
         <el-table-column label="操作" fixed="right" width="280">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.approveStatus === 0">编辑</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.approveStatus === 0">审批</el-button>
-            <el-button link type="warning" @click="handleExecute(row)" v-if="row.approveStatus === 1 && row.disposalStatus === 0">执行</el-button>
-            <el-button link type="success" @click="handleComplete(row)" v-if="row.disposalStatus === 1">完成</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.approveStatus === 0">删除</el-button>
-            <el-button link type="danger" @click="handleCancel(row)" v-if="row.disposalStatus !== 2 && row.disposalStatus !== 3">取消</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:approve')" link type="success" @click="handleApprove(row)">审批</el-button>
+            <el-button v-if="row.approveStatus === 1 && row.disposalStatus === 0 && userStore.hasPermission('disposal:sale:execute')" link type="warning" @click="handleExecute(row)">执行</el-button>
+            <el-button v-if="row.disposalStatus === 1 && userStore.hasPermission('disposal:sale:complete')" link type="success" @click="handleComplete(row)">完成</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="row.disposalStatus !== 2 && row.disposalStatus !== 3 && userStore.hasPermission('disposal:sale:cancel')" link type="danger" @click="handleCancel(row)">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -319,8 +319,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const formDialogVisible = ref(false)

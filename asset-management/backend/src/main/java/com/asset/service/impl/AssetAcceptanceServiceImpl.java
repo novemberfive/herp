@@ -5,6 +5,8 @@ import com.asset.dto.Result;
 import com.asset.entity.AssetAcceptance;
 import com.asset.repository.AssetAcceptanceRepository;
 import com.asset.service.AssetAcceptanceService;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,15 @@ import java.util.UUID;
 public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
     
     private final AssetAcceptanceRepository assetAcceptanceRepository;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
     
-    public AssetAcceptanceServiceImpl(AssetAcceptanceRepository assetAcceptanceRepository) {
+    public AssetAcceptanceServiceImpl(AssetAcceptanceRepository assetAcceptanceRepository,
+                                      DataPermissionService dataPermissionService,
+                                      OperationLogService operationLogService) {
         this.assetAcceptanceRepository = assetAcceptanceRepository;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
     
     @Override
@@ -49,6 +57,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         }
         
         wrapper.eq(AssetAcceptance::getDeleted, 0);
+        Result<PageResult<AssetAcceptance>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         wrapper.orderByDesc(AssetAcceptance::getCreateTime);
         
         Page<AssetAcceptance> resultPage = assetAcceptanceRepository.selectPage(page, wrapper);
@@ -68,6 +80,9 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         if (acceptance == null || acceptance.getDeleted() == 1) {
             return Result.error("验收登记不存在");
         }
+        if (!canAccessDepartment(acceptance.getDepartmentId())) {
+            return Result.forbidden("无权查看该验收登记");
+        }
         return Result.success(acceptance);
     }
     
@@ -83,7 +98,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
             acceptance.setStorageStatus(0);
         }
         assetAcceptanceRepository.insert(acceptance);
-        return Result.success("验收登记创建成功", null);
+        Result<Void> result = Result.success("验收登记创建成功", null);
+        operationLogService.record("ACQUISITION", "CREATE_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "创建验收登记：" + acceptance.getAcceptanceNo(), result);
+        return result;
     }
     
     @Override
@@ -98,7 +116,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         }
         acceptance.setUpdateTime(LocalDateTime.now());
         assetAcceptanceRepository.updateById(acceptance);
-        return Result.success("验收登记更新成功", null);
+        Result<Void> result = Result.success("验收登记更新成功", null);
+        operationLogService.record("ACQUISITION", "UPDATE_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "更新验收登记：" + existing.getAcceptanceNo(), result);
+        return result;
     }
     
     @Override
@@ -110,7 +131,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         }
         acceptance.setDeleted(1);
         assetAcceptanceRepository.updateById(acceptance);
-        return Result.success("验收登记删除成功", null);
+        Result<Void> result = Result.success("验收登记删除成功", null);
+        operationLogService.record("ACQUISITION", "DELETE_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "删除验收登记：" + acceptance.getAcceptanceNo(), result);
+        return result;
     }
     
     @Override
@@ -125,7 +149,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         }
         acceptance.setUpdateTime(LocalDateTime.now());
         assetAcceptanceRepository.updateById(acceptance);
-        return Result.success("验收登记已提交", null);
+        Result<Void> result = Result.success("验收登记已提交", null);
+        operationLogService.record("ACQUISITION", "SUBMIT_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "提交验收登记：" + acceptance.getAcceptanceNo(), result);
+        return result;
     }
     
     @Override
@@ -159,7 +186,10 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         acceptance.setHandlingOpinion(opinion);
         acceptance.setUpdateTime(LocalDateTime.now());
         assetAcceptanceRepository.updateById(acceptance);
-        return Result.success("验收通过", null);
+        Result<Void> result = Result.success("验收通过", null);
+        operationLogService.record("ACQUISITION", "APPROVE_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "验收通过：" + acceptance.getAcceptanceNo(), result);
+        return result;
     }
     
     @Override
@@ -180,11 +210,31 @@ public class AssetAcceptanceServiceImpl implements AssetAcceptanceService {
         acceptance.setHandlingOpinion("验收拒绝：" + reason);
         acceptance.setUpdateTime(LocalDateTime.now());
         assetAcceptanceRepository.updateById(acceptance);
-        return Result.success("验收拒绝", null);
+        Result<Void> result = Result.success("验收拒绝", null);
+        operationLogService.record("ACQUISITION", "REJECT_ACCEPTANCE", "asset_acceptance",
+            String.valueOf(acceptance.getId()), "验收拒绝：" + acceptance.getAcceptanceNo(), result);
+        return result;
     }
     
     private String generateAcceptanceNo() {
         return "AC" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) 
                + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    }
+
+    private Result<PageResult<AssetAcceptance>> applyDepartmentScope(LambdaQueryWrapper<AssetAcceptance> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看验收登记");
+        }
+        wrapper.eq(AssetAcceptance::getDepartmentId, departmentId);
+        return null;
+    }
+
+    private boolean canAccessDepartment(Long departmentId) {
+        return !dataPermissionService.shouldRestrictToOwnDepartment()
+            || dataPermissionService.canAccessDepartment(departmentId);
     }
 }

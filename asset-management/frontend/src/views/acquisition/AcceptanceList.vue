@@ -34,7 +34,7 @@
 
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('acquisition:acceptance:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建验收
         </el-button>
@@ -72,10 +72,10 @@
         <el-table-column label="操作" fixed="right" width="320">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.acceptanceResult === 0">编辑</el-button>
-            <el-button link type="success" @click="handleSubmit(row)" v-if="row.acceptanceResult === 0">提交</el-button>
-            <el-button link type="success" @click="handleAccept(row)" v-if="row.acceptanceResult === 0">验收</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.acceptanceResult === 0">删除</el-button>
+            <el-button v-if="row.acceptanceResult === 0 && userStore.hasPermission('acquisition:acceptance:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.acceptanceResult === 0 && userStore.hasPermission('acquisition:acceptance:submit')" link type="success" @click="handleSubmit(row)">提交</el-button>
+            <el-button v-if="row.acceptanceResult === 0 && userStore.hasPermission('acquisition:acceptance:approve')" link type="success" @click="handleAccept(row)">验收</el-button>
+            <el-button v-if="row.acceptanceResult === 0 && userStore.hasPermission('acquisition:acceptance:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -103,19 +103,35 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="资产名称" prop="assetName">
-              <el-input v-model="form.assetName" placeholder="请输入资产名称" clearable />
+              <el-select
+                v-model="form.assetName"
+                placeholder="请选择资产主数据"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+                style="width: 100%"
+                @change="handleAssetMasterChange"
+              >
+                <el-option
+                  v-for="item in assetMasterList"
+                  :key="item.id"
+                  :label="formatAssetMasterLabel(item)"
+                  :value="item.assetName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="规格型号" prop="specification">
-              <el-input v-model="form.specification" placeholder="请输入规格型号" clearable />
+              <el-input v-model="form.specification" placeholder="选择主数据后可自动带出" clearable />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="分类名称" prop="categoryName">
-              <el-input v-model="form.categoryName" placeholder="请输入分类名称" clearable />
+              <el-input v-model="form.categoryName" placeholder="选择主数据后可自动带出" clearable />
             </el-form-item>
           </el-col>
         </el-row>
@@ -139,7 +155,21 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="供应商" prop="supplierName">
-              <el-input v-model="form.supplierName" placeholder="请输入供应商名称" clearable />
+              <el-select
+                v-model="form.supplierName"
+                placeholder="请选择供应商"
+                clearable
+                filterable
+                style="width: 100%"
+                @change="handleSupplierChange"
+              >
+                <el-option
+                  v-for="item in supplierList"
+                  :key="item.id"
+                  :label="item.supplierName"
+                  :value="item.supplierName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -247,8 +277,11 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
+import { getEnabledAssetMasterList, getEnabledSupplierList } from '@/api/basic'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const formDialogVisible = ref(false)
@@ -257,6 +290,8 @@ const detailDialogVisible = ref(false)
 const currentRow = ref(null)
 const detailData = ref(null)
 const formRef = ref(null)
+const assetMasterList = ref([])
+const supplierList = ref([])
 
 const queryForm = reactive({
   acceptanceNo: '',
@@ -326,6 +361,23 @@ const fetchData = async () => {
   }
 }
 
+const loadBaseOptions = async () => {
+  try {
+    const [assetMasterRes, supplierRes] = await Promise.all([
+      getEnabledAssetMasterList(),
+      getEnabledSupplierList()
+    ])
+    if (assetMasterRes.code === 200) {
+      assetMasterList.value = assetMasterRes.data || []
+    }
+    if (supplierRes.code === 200) {
+      supplierList.value = supplierRes.data || []
+    }
+  } catch (error) {
+    console.error('加载基础主数据失败', error)
+  }
+}
+
 const handleSearch = () => {
   pagination.pageNum = 1
   fetchData()
@@ -361,6 +413,34 @@ const resetForm = () => {
   formRef.value?.clearValidate()
 }
 
+const handleAssetMasterChange = (value) => {
+  const assetMaster = assetMasterList.value.find(item => item.assetName === value)
+  if (!assetMaster) {
+    if (!value) {
+      form.specification = ''
+      form.categoryName = ''
+    }
+    return
+  }
+
+  form.assetName = assetMaster.assetName
+  form.specification = assetMaster.specification || ''
+  form.categoryName = assetMaster.categoryName || ''
+
+  if (assetMaster.defaultPrice !== null && assetMaster.defaultPrice !== undefined) {
+    form.actualPrice = Number(assetMaster.defaultPrice)
+  }
+}
+
+const handleSupplierChange = (value) => {
+  const supplier = supplierList.value.find(item => item.supplierName === value)
+  if (!supplier) {
+    form.supplierPhone = ''
+    return
+  }
+  form.supplierPhone = supplier.contactPhone || ''
+}
+
 const handleCreate = () => {
   resetForm()
   formDialogVisible.value = true
@@ -378,6 +458,17 @@ const handleView = async (row) => {
   } catch (error) {
     ElMessage.error('获取详情失败')
   }
+}
+
+const formatAssetMasterLabel = (item) => {
+  const parts = [item.assetName]
+  if (item.specification) {
+    parts.push(item.specification)
+  }
+  if (item.categoryName) {
+    parts.push(item.categoryName)
+  }
+  return parts.join(' / ')
 }
 
 const handleEdit = async (row) => {
@@ -511,6 +602,7 @@ const formatDateTime = (datetime) => {
 
 onMounted(() => {
   fetchData()
+  loadBaseOptions()
 })
 </script>
 

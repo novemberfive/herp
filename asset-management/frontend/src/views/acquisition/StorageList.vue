@@ -39,7 +39,7 @@
     <!-- 列表区 -->
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('acquisition:storage:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建入库
         </el-button>
@@ -88,9 +88,9 @@
         <el-table-column label="操作" fixed="right" width="240">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.status === 0">编辑</el-button>
-            <el-button link type="success" @click="handleConfirm(row)" v-if="row.status === 0">确认入库</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.status === 0">删除</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:storage:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:storage:confirm')" link type="success" @click="handleConfirm(row)">确认入库</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:storage:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -132,19 +132,35 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="资产名称" prop="assetName">
-              <el-input v-model="form.assetName" placeholder="请输入资产名称" clearable />
+              <el-select
+                v-model="form.assetName"
+                placeholder="请选择资产主数据"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+                style="width: 100%"
+                @change="handleAssetMasterChange"
+              >
+                <el-option
+                  v-for="item in assetMasterList"
+                  :key="item.id"
+                  :label="formatAssetMasterLabel(item)"
+                  :value="item.assetName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="规格型号" prop="specification">
-              <el-input v-model="form.specification" placeholder="请输入规格型号" clearable />
+              <el-input v-model="form.specification" placeholder="选择主数据后可自动带出" clearable />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="分类名称" prop="categoryName">
-              <el-input v-model="form.categoryName" placeholder="请输入分类名称" clearable />
+              <el-input v-model="form.categoryName" placeholder="选择主数据后可自动带出" clearable />
             </el-form-item>
           </el-col>
         </el-row>
@@ -168,7 +184,23 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="供应商名称" prop="supplierName">
-              <el-input v-model="form.supplierName" placeholder="请输入供应商名称" clearable />
+              <el-select
+                v-model="form.supplierName"
+                placeholder="请选择供应商"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+                style="width: 100%"
+                @change="handleSupplierChange"
+              >
+                <el-option
+                  v-for="item in supplierList"
+                  :key="item.id"
+                  :label="item.supplierName"
+                  :value="item.supplierName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -220,14 +252,20 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
+import { getEnabledAssetMasterList, getEnabledSupplierList } from '@/api/basic'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
 const isEdit = ref(false)
+const assetMasterList = ref([])
+const supplierList = ref([])
 
 const queryForm = reactive({
   storageNo: '',
@@ -270,8 +308,25 @@ const rules = {
 
 // 监听数量和单价变化，自动计算总金额
 watch([() => form.quantity, () => form.unitPrice], () => {
-  form.totalAmount = (form.quantity * form.unitPrice).toFixed(2)
+  form.totalAmount = Number((Number(form.quantity || 0) * Number(form.unitPrice || 0)).toFixed(2))
 })
+
+const loadBaseOptions = async () => {
+  try {
+    const [assetMasterRes, supplierRes] = await Promise.all([
+      getEnabledAssetMasterList(),
+      getEnabledSupplierList()
+    ])
+    if (assetMasterRes.code === 200) {
+      assetMasterList.value = assetMasterRes.data || []
+    }
+    if (supplierRes.code === 200) {
+      supplierList.value = supplierRes.data || []
+    }
+  } catch (error) {
+    console.error('加载基础主数据失败', error)
+  }
+}
 
 const fetchData = async () => {
   loading.value = true
@@ -405,6 +460,45 @@ const resetForm = () => {
   }
 }
 
+const handleAssetMasterChange = (value) => {
+  const assetMaster = assetMasterList.value.find(item => item.assetName === value)
+  if (!assetMaster) {
+    if (!value) {
+      form.assetCode = ''
+      form.specification = ''
+      form.categoryName = ''
+    }
+    return
+  }
+
+  form.assetCode = assetMaster.assetCode || form.assetCode
+  form.assetName = assetMaster.assetName
+  form.specification = assetMaster.specification || ''
+  form.categoryName = assetMaster.categoryName || ''
+
+  if (assetMaster.defaultPrice !== null && assetMaster.defaultPrice !== undefined) {
+    form.unitPrice = Number(assetMaster.defaultPrice)
+  }
+}
+
+const handleSupplierChange = (value) => {
+  const supplier = supplierList.value.find(item => item.supplierName === value)
+  if (!supplier && !value) {
+    form.supplierName = ''
+  }
+}
+
+const formatAssetMasterLabel = (item) => {
+  const parts = [item.assetName]
+  if (item.specification) {
+    parts.push(item.specification)
+  }
+  if (item.categoryName) {
+    parts.push(item.categoryName)
+  }
+  return parts.join(' / ')
+}
+
 const getStorageTypeTag = (type) => {
   const types = { 1: 'primary', 2: 'success', 3: 'warning', 4: 'info' }
   return types[type] || 'info'
@@ -422,6 +516,7 @@ const formatDateTime = (datetime) => {
 
 onMounted(() => {
   fetchData()
+  loadBaseOptions()
 })
 </script>
 
