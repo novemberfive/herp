@@ -25,7 +25,7 @@ public class AssetAcceptanceController {
      * 分页查询验收登记列表
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance')")
     public Result<PageResult<AssetAcceptance>> getPageList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -37,7 +37,7 @@ public class AssetAcceptanceController {
      * 根据 ID 查询验收登记
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance')")
     public Result<AssetAcceptance> getById(@PathVariable Long id) {
         return assetAcceptanceService.getById(id);
     }
@@ -46,7 +46,7 @@ public class AssetAcceptanceController {
      * 创建验收登记
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:create')")
     public Result<Void> create(@Valid @RequestBody AssetAcceptance acceptance) {
         return assetAcceptanceService.create(acceptance);
     }
@@ -55,7 +55,7 @@ public class AssetAcceptanceController {
      * 更新验收登记
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:edit')")
     public Result<Void> update(@Valid @RequestBody AssetAcceptance acceptance) {
         return assetAcceptanceService.update(acceptance);
     }
@@ -64,7 +64,7 @@ public class AssetAcceptanceController {
      * 删除验收登记
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:delete')")
     public Result<Void> delete(@PathVariable Long id) {
         return assetAcceptanceService.delete(id);
     }
@@ -73,7 +73,7 @@ public class AssetAcceptanceController {
      * 提交验收
      */
     @PostMapping("/{id}/submit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:submit')")
     public Result<Void> submit(@PathVariable Long id) {
         return assetAcceptanceService.submit(id);
     }
@@ -82,7 +82,7 @@ public class AssetAcceptanceController {
      * 验收通过
      */
     @PostMapping("/{id}/accept")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:approve')")
     public Result<Void> accept(@PathVariable Long id, @RequestParam String opinion) {
         return assetAcceptanceService.accept(id, opinion);
     }
@@ -91,7 +91,7 @@ public class AssetAcceptanceController {
      * 验收拒绝
      */
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('acquisition:acceptance:approve')")
     public Result<Void> reject(@PathVariable Long id, @RequestParam String reason) {
         return assetAcceptanceService.reject(id, reason);
     }

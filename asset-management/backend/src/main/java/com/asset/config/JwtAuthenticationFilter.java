@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -50,14 +51,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
                 String username = decodedJWT.getClaim("username").asString();
                 String role = decodedJWT.getClaim("role").asString();
-                
-                List<String> authorities = new ArrayList<>();
-                authorities.add("ROLE_" + role.toUpperCase());
+                List<String> permissions = decodedJWT.getClaim("permissions").asList(String.class);
+
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                if (permissions != null) {
+                    permissions.stream()
+                            .filter(StringUtils::hasText)
+                            .map(SimpleGrantedAuthority::new)
+                            .forEach(authorities::add);
+                }
                 
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(username, null, authorities);
                 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                request.setAttribute("username", username);
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");

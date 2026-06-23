@@ -4,6 +4,8 @@ import com.asset.dto.Result;
 import com.asset.entity.AssetBorrow;
 import com.asset.repository.AssetBorrowMapper;
 import com.asset.service.AssetBorrowService;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,17 +24,29 @@ import java.util.Map;
 public class AssetBorrowServiceImpl implements AssetBorrowService {
 
     private final AssetBorrowMapper assetBorrowMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
 
-    public AssetBorrowServiceImpl(AssetBorrowMapper assetBorrowMapper) {
+    public AssetBorrowServiceImpl(AssetBorrowMapper assetBorrowMapper,
+                                  DataPermissionService dataPermissionService,
+                                  OperationLogService operationLogService) {
         this.assetBorrowMapper = assetBorrowMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
 
     @Override
-    public Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus, Long borrowerId) {
+    public Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus,
+                                                     Long borrowerId, String borrowNo, String assetCode,
+                                                     String assetName, String borrowerName) {
         Page<AssetBorrow> page = new Page<>(pageNum, pageSize);
         
         LambdaQueryWrapper<AssetBorrow> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetBorrow::getDeleted, 0);
+        Result<Map<String, Object>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         
         if (borrowStatus != null) {
             wrapper.eq(AssetBorrow::getBorrowStatus, borrowStatus);
@@ -40,10 +55,23 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         if (borrowerId != null) {
             wrapper.eq(AssetBorrow::getBorrowerId, borrowerId);
         }
+        if (borrowNo != null && !borrowNo.isEmpty()) {
+            wrapper.like(AssetBorrow::getBorrowNo, borrowNo);
+        }
+        if (assetCode != null && !assetCode.isEmpty()) {
+            wrapper.like(AssetBorrow::getAssetCode, assetCode);
+        }
+        if (assetName != null && !assetName.isEmpty()) {
+            wrapper.like(AssetBorrow::getAssetName, assetName);
+        }
+        if (borrowerName != null && !borrowerName.isEmpty()) {
+            wrapper.like(AssetBorrow::getBorrowerName, borrowerName);
+        }
         
         wrapper.orderByDesc(AssetBorrow::getBorrowDate);
         
         Page<AssetBorrow> resultPage = assetBorrowMapper.selectPage(page, wrapper);
+        refreshOverdueStatuses(resultPage.getRecords());
         
         Map<String, Object> data = Map.of(
             "list", resultPage.getRecords(),
@@ -61,6 +89,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         if (borrow == null || borrow.getDeleted() == 1) {
             return Result.error("资产借用记录不存在");
         }
+        if (!canAccessDepartment(borrow.getBorrowerDepartmentId())) {
+            return Result.forbidden("无权查看该借用记录");
+        }
+        refreshOverdueStatus(borrow);
         return Result.success(borrow);
     }
 
@@ -81,7 +113,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         borrow.setCreateTime(LocalDateTime.now());
         
         assetBorrowMapper.insert(borrow);
-        return Result.success("资产借用申请创建成功", null);
+        Result<Void> result = Result.success("资产借用申请创建成功", null);
+        operationLogService.record("MANAGEMENT", "CREATE_BORROW", "asset_borrow",
+            String.valueOf(borrow.getId()), "创建借用单：" + borrow.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -99,7 +134,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         
         borrow.setUpdateTime(LocalDateTime.now());
         assetBorrowMapper.updateById(borrow);
-        return Result.success("资产借用申请更新成功", null);
+        Result<Void> result = Result.success("资产借用申请更新成功", null);
+        operationLogService.record("MANAGEMENT", "UPDATE_BORROW", "asset_borrow",
+            String.valueOf(borrow.getId()), "更新借用单：" + existing.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -113,7 +151,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         borrow.setDeleted(1);
         borrow.setUpdateTime(LocalDateTime.now());
         assetBorrowMapper.updateById(borrow);
-        return Result.success("资产借用记录删除成功", null);
+        Result<Void> result = Result.success("资产借用记录删除成功", null);
+        operationLogService.record("MANAGEMENT", "DELETE_BORROW", "asset_borrow",
+            String.valueOf(borrow.getId()), "删除借用单：" + borrow.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -144,7 +185,11 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         }
         
         assetBorrowMapper.updateById(borrow);
-        return Result.success("资产借用申请审批完成", null);
+        Result<Void> result = Result.success("资产借用申请审批完成", null);
+        operationLogService.record("MANAGEMENT", approveStatus == 1 ? "APPROVE_BORROW" : "REJECT_BORROW",
+            "asset_borrow", String.valueOf(borrow.getId()),
+            (approveStatus == 1 ? "审批通过借用单：" : "审批拒绝借用单：") + borrow.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -155,8 +200,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
             return Result.error("资产借用记录不存在");
         }
         
-        // 只有借用中的才能归还
-        if (borrow.getBorrowStatus() != 1) {
+        refreshOverdueStatus(borrow);
+
+        // 只有借用中或已逾期的才能归还
+        if (borrow.getBorrowStatus() != 1 && borrow.getBorrowStatus() != 3) {
             return Result.error("只有借用中的资产才能归还");
         }
         
@@ -167,7 +214,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         borrow.setUpdateTime(LocalDateTime.now());
         
         assetBorrowMapper.updateById(borrow);
-        return Result.success("资产已归还", null);
+        Result<Void> result = Result.success("资产已归还", null);
+        operationLogService.record("MANAGEMENT", "RETURN_BORROW", "asset_borrow",
+            String.valueOf(borrow.getId()), "归还借用单：" + borrow.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -188,7 +238,10 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         borrow.setUpdateTime(LocalDateTime.now());
         
         assetBorrowMapper.updateById(borrow);
-        return Result.success("资产借用已取消", null);
+        Result<Void> result = Result.success("资产借用已取消", null);
+        operationLogService.record("MANAGEMENT", "CANCEL_BORROW", "asset_borrow",
+            String.valueOf(borrow.getId()), "取消借用单：" + borrow.getBorrowNo(), result);
+        return result;
     }
 
     @Override
@@ -198,9 +251,11 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         if (borrow == null || borrow.getDeleted() == 1) {
             return Result.error("资产借用记录不存在");
         }
+
+        refreshOverdueStatus(borrow);
         
-        // 只有借用中的才能发送提醒
-        if (borrow.getBorrowStatus() != 1) {
+        // 只有借用中或已逾期的才能发送提醒
+        if (borrow.getBorrowStatus() != 1 && borrow.getBorrowStatus() != 3) {
             return Result.error("只有借用中的资产才能发送逾期提醒");
         }
         
@@ -208,19 +263,56 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         if (borrow.getExpectedReturnDate() != null && 
             borrow.getExpectedReturnDate().isBefore(LocalDate.now())) {
             
+            borrow.setBorrowStatus(3);
             borrow.setReminderSent(1);
             borrow.setLastReminderTime(LocalDateTime.now());
+            borrow.setRemark(appendReminderRemark(borrow.getRemark(), borrow.getExpectedReturnDate(), borrow.getLastReminderTime()));
             borrow.setUpdateTime(LocalDateTime.now());
             
             assetBorrowMapper.updateById(borrow);
-            
-            // TODO: 这里可以集成消息通知系统发送提醒
-            // 例如：发送邮件、短信或站内消息
-            
-            return Result.success("逾期提醒已发送", null);
+
+            Result<Void> result = Result.success("逾期提醒已记录，可在借用详情中查看提醒痕迹", null);
+            operationLogService.record("MANAGEMENT", "REMIND_BORROW", "asset_borrow",
+                String.valueOf(borrow.getId()), "发送借用逾期提醒：" + borrow.getBorrowNo(), result);
+            return result;
         } else {
-            return Result.error("该借用尚未逾期", null);
+            return Result.error("该借用尚未逾期");
         }
+    }
+
+    private void refreshOverdueStatuses(List<AssetBorrow> borrows) {
+        for (AssetBorrow borrow : borrows) {
+            refreshOverdueStatus(borrow);
+        }
+    }
+
+    private void refreshOverdueStatus(AssetBorrow borrow) {
+        if (borrow == null
+            || borrow.getDeleted() == 1
+            || borrow.getExpectedReturnDate() == null
+            || borrow.getBorrowStatus() == null
+            || borrow.getBorrowStatus() == 2
+            || borrow.getBorrowStatus() == 4) {
+            return;
+        }
+
+        if (borrow.getExpectedReturnDate().isBefore(LocalDate.now()) && borrow.getBorrowStatus() != 3) {
+            borrow.setBorrowStatus(3);
+            borrow.setUpdateTime(LocalDateTime.now());
+            assetBorrowMapper.updateById(borrow);
+        }
+    }
+
+    private String appendReminderRemark(String originalRemark, LocalDate expectedReturnDate, LocalDateTime reminderTime) {
+        String reminderNote = String.format(
+            "[逾期提醒] 应归还日期：%s；提醒时间：%s",
+            expectedReturnDate,
+            reminderTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        );
+        if (originalRemark == null || originalRemark.isBlank()) {
+            return reminderNote;
+        }
+        return originalRemark + System.lineSeparator() + reminderNote;
     }
 
     /**
@@ -231,5 +323,22 @@ public class AssetBorrowServiceImpl implements AssetBorrowService {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         int random = (int) ((Math.random() * 9000) + 1000);
         return "BR" + timestamp + random;
+    }
+
+    private Result<Map<String, Object>> applyDepartmentScope(LambdaQueryWrapper<AssetBorrow> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看借用记录");
+        }
+        wrapper.eq(AssetBorrow::getBorrowerDepartmentId, departmentId);
+        return null;
+    }
+
+    private boolean canAccessDepartment(Long departmentId) {
+        return !dataPermissionService.shouldRestrictToOwnDepartment()
+            || dataPermissionService.canAccessDepartment(departmentId);
     }
 }

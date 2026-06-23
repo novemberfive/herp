@@ -27,7 +27,7 @@ public class InventoryTaskController {
      * GET /api/inventory/task/list?pageNum=1&pageSize=10&status=1&taskType=2
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:task')")
     public Result<Map<String, Object>> getTaskList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -41,7 +41,7 @@ public class InventoryTaskController {
      * GET /api/inventory/task/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:task')")
     public Result<InventoryTask> getTaskById(@PathVariable Long id) {
         return inventoryTaskService.getTaskById(id);
     }
@@ -51,7 +51,7 @@ public class InventoryTaskController {
      * POST /api/inventory/task
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:task:create')")
     public Result<Void> createTask(@Valid @RequestBody InventoryTask task) {
         return inventoryTaskService.createTask(task);
     }
@@ -61,7 +61,7 @@ public class InventoryTaskController {
      * PUT /api/inventory/task
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:task:edit')")
     public Result<Void> updateTask(@Valid @RequestBody InventoryTask task) {
         return inventoryTaskService.updateTask(task);
     }
@@ -71,7 +71,7 @@ public class InventoryTaskController {
      * DELETE /api/inventory/task/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('inventory:task:delete')")
     public Result<Void> deleteTask(@PathVariable Long id) {
         return inventoryTaskService.deleteTask(id);
     }
@@ -81,7 +81,7 @@ public class InventoryTaskController {
      * POST /api/inventory/task/{id}/start
      */
     @PostMapping("/{id}/start")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:task:start')")
     public Result<Void> startTask(@PathVariable Long id) {
         return inventoryTaskService.startTask(id);
     }
@@ -91,7 +91,7 @@ public class InventoryTaskController {
      * POST /api/inventory/task/{id}/complete
      */
     @PostMapping("/{id}/complete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:task:complete')")
     public Result<Void> completeTask(@PathVariable Long id) {
         return inventoryTaskService.completeTask(id);
     }
@@ -101,7 +101,7 @@ public class InventoryTaskController {
      * POST /api/inventory/task/{id}/cancel
      */
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:task:cancel')")
     public Result<Void> cancelTask(@PathVariable Long id) {
         return inventoryTaskService.cancelTask(id);
     }

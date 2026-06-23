@@ -26,7 +26,7 @@ public class ReportController {
      * GET /api/reports/statistics?startDate=2024-01-01&endDate=2024-12-31&departmentId=1
      */
     @GetMapping("/statistics")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('report:statistics')")
     public Result<Map<String, Object>> getStatisticsReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -39,7 +39,7 @@ public class ReportController {
      * GET /api/reports/disposal?startDate=2024-01-01&endDate=2024-12-31&disposalType=1&pageNum=1&pageSize=10
      */
     @GetMapping("/disposal")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('report:disposal')")
     public Result<Map<String, Object>> getDisposalReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -54,7 +54,7 @@ public class ReportController {
      * GET /api/reports/depreciation?startDate=2024-01-01&endDate=2024-12-31&categoryId=1&pageNum=1&pageSize=10
      */
     @GetMapping("/depreciation")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('report:depreciation')")
     public Result<Map<String, Object>> getDepreciationReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -69,7 +69,7 @@ public class ReportController {
      * GET /api/reports/export/statistics?startDate=2024-01-01&endDate=2024-12-31&departmentId=1
      */
     @GetMapping("/export/statistics")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('report:statistics:export')")
     public void exportStatisticsReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -83,7 +83,7 @@ public class ReportController {
      * GET /api/reports/export/disposal?startDate=2024-01-01&endDate=2024-12-31&disposalType=1
      */
     @GetMapping("/export/disposal")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('report:disposal:export')")
     public void exportDisposalReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
@@ -97,7 +97,7 @@ public class ReportController {
      * GET /api/reports/export/depreciation?startDate=2024-01-01&endDate=2024-12-31&categoryId=1
      */
     @GetMapping("/export/depreciation")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('report:depreciation:export')")
     public void exportDepreciationReport(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,

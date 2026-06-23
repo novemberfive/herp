@@ -4,6 +4,7 @@ import com.asset.dto.Result;
 import com.asset.entity.AssetMaintenance;
 import com.asset.repository.AssetMaintenanceMapper;
 import com.asset.service.AssetMaintenanceService;
+import com.asset.service.OperationLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,12 @@ import java.util.Map;
 public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
 
     private final AssetMaintenanceMapper assetMaintenanceMapper;
+    private final OperationLogService operationLogService;
 
-    public AssetMaintenanceServiceImpl(AssetMaintenanceMapper assetMaintenanceMapper) {
+    public AssetMaintenanceServiceImpl(AssetMaintenanceMapper assetMaintenanceMapper,
+                                       OperationLogService operationLogService) {
         this.assetMaintenanceMapper = assetMaintenanceMapper;
+        this.operationLogService = operationLogService;
     }
 
     @Override
@@ -77,7 +81,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         maintenance.setMaintenanceResult(0); // 待维修
         
         assetMaintenanceMapper.insert(maintenance);
-        return Result.success("维修申请创建成功", null);
+        Result<Void> result = Result.success("维修申请创建成功", null);
+        operationLogService.record("ARCHIVE", "CREATE_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "创建维修单：" + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -90,7 +97,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         
         maintenance.setUpdateTime(LocalDateTime.now());
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修信息更新成功", null);
+        Result<Void> result = Result.success("维修信息更新成功", null);
+        operationLogService.record("ARCHIVE", "UPDATE_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "更新维修单：" + existing.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -104,7 +114,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         maintenance.setDeleted(1);
         maintenance.setUpdateTime(LocalDateTime.now());
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修记录删除成功", null);
+        Result<Void> result = Result.success("维修记录删除成功", null);
+        operationLogService.record("ARCHIVE", "DELETE_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "删除维修单：" + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -130,7 +143,11 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         }
         
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修申请审批成功", null);
+        Result<Void> result = Result.success("维修申请审批成功", null);
+        operationLogService.record("ARCHIVE", approveStatus == 1 ? "APPROVE_MAINTENANCE" : "REJECT_MAINTENANCE",
+            "asset_maintenance", String.valueOf(maintenance.getId()),
+            (approveStatus == 1 ? "审批通过维修单：" : "审批拒绝维修单：") + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -151,7 +168,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         maintenance.setMaintenanceResult(1); // 维修中
         
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修已开始", null);
+        Result<Void> result = Result.success("维修已开始", null);
+        operationLogService.record("ARCHIVE", "START_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "开始维修：" + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -168,7 +188,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         maintenance.setEndDate(LocalDateTime.now());
         
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修已完成", null);
+        Result<Void> result = Result.success("维修已完成", null);
+        operationLogService.record("ARCHIVE", "COMPLETE_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "完成维修：" + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     @Override
@@ -187,7 +210,10 @@ public class AssetMaintenanceServiceImpl implements AssetMaintenanceService {
         maintenance.setEndDate(LocalDateTime.now());
         
         assetMaintenanceMapper.updateById(maintenance);
-        return Result.success("维修已取消", null);
+        Result<Void> result = Result.success("维修已取消", null);
+        operationLogService.record("ARCHIVE", "CANCEL_MAINTENANCE", "asset_maintenance",
+            String.valueOf(maintenance.getId()), "取消维修：" + maintenance.getMaintenanceNo(), result);
+        return result;
     }
 
     /**

@@ -3,6 +3,8 @@ package com.asset.service.impl;
 import com.asset.dto.Result;
 import com.asset.entity.InventoryTask;
 import com.asset.repository.InventoryTaskMapper;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.asset.service.InventoryTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,9 +22,15 @@ import java.util.Map;
 public class InventoryTaskServiceImpl implements InventoryTaskService {
 
     private final InventoryTaskMapper inventoryTaskMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
 
-    public InventoryTaskServiceImpl(InventoryTaskMapper inventoryTaskMapper) {
+    public InventoryTaskServiceImpl(InventoryTaskMapper inventoryTaskMapper,
+                                    DataPermissionService dataPermissionService,
+                                    OperationLogService operationLogService) {
         this.inventoryTaskMapper = inventoryTaskMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
 
     @Override
@@ -39,7 +47,12 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         if (taskType != null) {
             wrapper.eq(InventoryTask::getTaskType, taskType);
         }
-        
+
+        Result<Map<String, Object>> scopeResult = applyCreatorScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
+
         wrapper.orderByDesc(InventoryTask::getCreateTime);
         
         Page<InventoryTask> resultPage = inventoryTaskMapper.selectPage(page, wrapper);
@@ -60,6 +73,9 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         if (task == null || task.getDeleted() == 1) {
             return Result.error("盘点任务不存在");
         }
+        if (!dataPermissionService.canAccessCreatedBy(task.getCreateUserId())) {
+            return Result.forbidden("无权查看该盘点任务");
+        }
         return Result.success(task);
     }
 
@@ -72,9 +88,15 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         
         // 设置初始状态
         task.setStatus(0); // 未开始
-        
+        if (task.getCreateUserId() == null) {
+            task.setCreateUserId(dataPermissionService.getCurrentUserId());
+        }
+
         inventoryTaskMapper.insert(task);
-        return Result.success("盘点任务创建成功", null);
+        Result<Void> result = Result.success("盘点任务创建成功", null);
+        operationLogService.record("INVENTORY", "CREATE_TASK", "inventory_task",
+            String.valueOf(task.getId()), "创建盘点任务：" + task.getTaskNo(), result);
+        return result;
     }
 
     @Override
@@ -92,7 +114,10 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         
         task.setUpdateTime(LocalDateTime.now());
         inventoryTaskMapper.updateById(task);
-        return Result.success("盘点任务更新成功", null);
+        Result<Void> result = Result.success("盘点任务更新成功", null);
+        operationLogService.record("INVENTORY", "UPDATE_TASK", "inventory_task",
+            String.valueOf(task.getId()), "更新盘点任务：" + existing.getTaskNo(), result);
+        return result;
     }
 
     @Override
@@ -106,7 +131,10 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         task.setDeleted(1);
         task.setUpdateTime(LocalDateTime.now());
         inventoryTaskMapper.updateById(task);
-        return Result.success("盘点任务删除成功", null);
+        Result<Void> result = Result.success("盘点任务删除成功", null);
+        operationLogService.record("INVENTORY", "DELETE_TASK", "inventory_task",
+            String.valueOf(task.getId()), "删除盘点任务：" + task.getTaskNo(), result);
+        return result;
     }
 
     @Override
@@ -124,7 +152,10 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         task.setStatus(1); // 进行中
         task.setUpdateTime(LocalDateTime.now());
         inventoryTaskMapper.updateById(task);
-        return Result.success("盘点任务已启动", null);
+        Result<Void> result = Result.success("盘点任务已启动", null);
+        operationLogService.record("INVENTORY", "START_TASK", "inventory_task",
+            String.valueOf(task.getId()), "启动盘点任务：" + task.getTaskNo(), result);
+        return result;
     }
 
     @Override
@@ -143,7 +174,10 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         task.setCompleteTime(LocalDateTime.now());
         task.setUpdateTime(LocalDateTime.now());
         inventoryTaskMapper.updateById(task);
-        return Result.success("盘点任务已完成", null);
+        Result<Void> result = Result.success("盘点任务已完成", null);
+        operationLogService.record("INVENTORY", "COMPLETE_TASK", "inventory_task",
+            String.valueOf(task.getId()), "完成盘点任务：" + task.getTaskNo(), result);
+        return result;
     }
 
     @Override
@@ -161,7 +195,10 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         task.setStatus(3); // 已终止
         task.setUpdateTime(LocalDateTime.now());
         inventoryTaskMapper.updateById(task);
-        return Result.success("盘点任务已终止", null);
+        Result<Void> result = Result.success("盘点任务已终止", null);
+        operationLogService.record("INVENTORY", "CANCEL_TASK", "inventory_task",
+            String.valueOf(task.getId()), "终止盘点任务：" + task.getTaskNo(), result);
+        return result;
     }
 
     /**
@@ -172,5 +209,17 @@ public class InventoryTaskServiceImpl implements InventoryTaskService {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         int random = (int) ((Math.random() * 9000) + 1000);
         return "PD" + timestamp + random;
+    }
+
+    private Result<Map<String, Object>> applyCreatorScope(LambdaQueryWrapper<InventoryTask> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long currentUserId = dataPermissionService.getCurrentUserId();
+        if (currentUserId == null) {
+            return Result.forbidden("当前用户无权查看盘点任务");
+        }
+        wrapper.eq(InventoryTask::getCreateUserId, currentUserId);
+        return null;
     }
 }

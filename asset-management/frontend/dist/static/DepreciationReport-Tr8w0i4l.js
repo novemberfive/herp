@@ -1,1 +1,0 @@
-import{_ as o}from"./index-BEBcObf4.js";import{j as t,A as c,C as r,l as s}from"./element-plus-IE5iS8oH.js";const n={},a={class:"placeholder"};function _(p,l){const e=s("el-empty");return t(),c("div",a,[r(e,{description:"折旧报表功能开发中"})])}const m=o(n,[["render",_],["__scopeId","data-v-a3f19cce"]]);export{m as default};

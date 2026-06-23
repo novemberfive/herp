@@ -73,17 +73,15 @@ export function rejectPurchase(id, opinion) {
 // 获取资产分类列表
 export function getCategoryList() {
   return request({
-    url: '/basic/category/list',
-    method: 'get',
-    params: { pageNum: 1, pageSize: 100 }
+    url: '/categories/list',
+    method: 'get'
   })
 }
 
 // 获取部门列表
 export function getDepartmentList() {
   return request({
-    url: '/basic/department/list',
-    method: 'get',
-    params: { pageNum: 1, pageSize: 100 }
+    url: '/departments/list',
+    method: 'get'
   })
 }

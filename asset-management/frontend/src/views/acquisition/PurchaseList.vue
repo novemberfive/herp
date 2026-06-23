@@ -28,7 +28,7 @@
     <!-- 列表区 -->
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('acquisition:purchase:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建申请
         </el-button>
@@ -62,10 +62,10 @@
         <el-table-column label="操作" fixed="right" width="280">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)" v-if="row.status === 0">编辑</el-button>
-            <el-button link type="success" @click="handleSubmit(row)" v-if="row.status === 0">提交</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.status === 1">审批</el-button>
-            <el-button link type="danger" @click="handleDelete(row)" v-if="row.status === 0">删除</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:purchase:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:purchase:submit')" link type="success" @click="handleSubmit(row)">提交</el-button>
+            <el-button v-if="row.status === 1 && userStore.hasPermission('acquisition:purchase:approve')" link type="success" @click="handleApprove(row)">审批</el-button>
+            <el-button v-if="row.status === 0 && userStore.hasPermission('acquisition:purchase:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -104,12 +104,28 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="资产名称" required>
-              <el-input v-model="formData.assetName" placeholder="请输入资产名称" />
+              <el-select
+                v-model="formData.assetName"
+                placeholder="请选择资产主数据"
+                filterable
+                allow-create
+                default-first-option
+                clearable
+                style="width: 100%"
+                @change="handleAssetMasterChange"
+              >
+                <el-option
+                  v-for="item in assetMasterList"
+                  :key="item.id"
+                  :label="formatAssetMasterLabel(item)"
+                  :value="item.assetName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="规格型号">
-              <el-input v-model="formData.specification" placeholder="请输入规格型号" />
+              <el-input v-model="formData.specification" placeholder="选择主数据后可自动带出" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -120,7 +136,7 @@
                 <el-option
                   v-for="item in categoryList"
                   :key="item.id"
-                  :label="item.name"
+                  :label="item.categoryName || item.name"
                   :value="item.id"
                 />
               </el-select>
@@ -151,7 +167,7 @@
                 <el-option
                   v-for="item in departmentList"
                   :key="item.id"
-                  :label="item.name"
+                  :label="item.deptName || item.name"
                   :value="item.id"
                 />
               </el-select>
@@ -216,8 +232,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import { getPurchaseList, createPurchase, updatePurchase, deletePurchase, submitPurchase, approvePurchase, rejectPurchase, getCategoryList, getDepartmentList, getPurchaseById } from '@/api/purchase'
+import { getEnabledAssetMasterList } from '@/api/basic'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const approveDialogVisible = ref(false)
@@ -226,6 +245,7 @@ const viewDialogVisible = ref(false)
 const currentRow = ref(null)
 const categoryList = ref([])
 const departmentList = ref([])
+const assetMasterList = ref([])
 
 const queryForm = reactive({
   requestNo: '',
@@ -282,18 +302,22 @@ const fetchData = async () => {
 
 const loadCategoryAndDepartment = async () => {
   try {
-    const [categoryRes, deptRes] = await Promise.all([
+    const [categoryRes, deptRes, assetMasterRes] = await Promise.all([
       getCategoryList(),
-      getDepartmentList()
+      getDepartmentList(),
+      getEnabledAssetMasterList()
     ])
     if (categoryRes.code === 200) {
-      categoryList.value = categoryRes.data.records || []
+      categoryList.value = Array.isArray(categoryRes.data) ? categoryRes.data : (categoryRes.data.records || [])
     }
     if (deptRes.code === 200) {
-      departmentList.value = deptRes.data.records || []
+      departmentList.value = Array.isArray(deptRes.data) ? deptRes.data : (deptRes.data.records || [])
+    }
+    if (assetMasterRes.code === 200) {
+      assetMasterList.value = assetMasterRes.data || []
     }
   } catch (error) {
-    console.error('加载分类和部门失败', error)
+    console.error('加载基础主数据失败', error)
   }
 }
 
@@ -332,15 +356,47 @@ const resetForm = () => {
 const handleCategoryChange = (value) => {
   const category = categoryList.value.find(item => item.id === value)
   if (category) {
-    formData.categoryName = category.name
+    formData.categoryName = category.categoryName || category.name
+  }
+}
+
+const handleAssetMasterChange = (value) => {
+  const assetMaster = assetMasterList.value.find(item => item.assetName === value)
+  if (!assetMaster) {
+    if (!value) {
+      formData.specification = ''
+      formData.categoryId = null
+      formData.categoryName = ''
+    }
+    return
+  }
+
+  formData.assetName = assetMaster.assetName
+  formData.specification = assetMaster.specification || ''
+  formData.categoryId = assetMaster.categoryId || null
+  formData.categoryName = assetMaster.categoryName || ''
+
+  if (assetMaster.defaultPrice !== null && assetMaster.defaultPrice !== undefined) {
+    formData.estimatedPrice = Number(assetMaster.defaultPrice)
   }
 }
 
 const handleDepartmentChange = (value) => {
   const dept = departmentList.value.find(item => item.id === value)
   if (dept) {
-    formData.departmentName = dept.name
+    formData.departmentName = dept.deptName || dept.name
   }
+}
+
+const formatAssetMasterLabel = (item) => {
+  const parts = [item.assetName]
+  if (item.specification) {
+    parts.push(item.specification)
+  }
+  if (item.categoryName) {
+    parts.push(item.categoryName)
+  }
+  return parts.join(' / ')
 }
 
 const handleSubmitForm = async () => {

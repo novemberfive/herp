@@ -28,7 +28,7 @@ public class AssetMaintenanceController {
      * GET /api/maintenance/list?pageNum=1&pageSize=10&maintenanceResult=2&approveStatus=1
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('archive:maintenance')")
     public Result<Map<String, Object>> getMaintenanceList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -42,7 +42,7 @@ public class AssetMaintenanceController {
      * GET /api/maintenance/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('archive:maintenance')")
     public Result<AssetMaintenance> getMaintenanceById(@PathVariable Long id) {
         return assetMaintenanceService.getMaintenanceById(id);
     }
@@ -52,7 +52,7 @@ public class AssetMaintenanceController {
      * POST /api/maintenance
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('archive:maintenance:create')")
     public Result<Void> createMaintenance(@Valid @RequestBody AssetMaintenance maintenance) {
         return assetMaintenanceService.createMaintenance(maintenance);
     }
@@ -62,7 +62,7 @@ public class AssetMaintenanceController {
      * PUT /api/maintenance
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('archive:maintenance:edit')")
     public Result<Void> updateMaintenance(@Valid @RequestBody AssetMaintenance maintenance) {
         return assetMaintenanceService.updateMaintenance(maintenance);
     }
@@ -72,7 +72,7 @@ public class AssetMaintenanceController {
      * DELETE /api/maintenance/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('archive:maintenance:delete')")
     public Result<Void> deleteMaintenance(@PathVariable Long id) {
         return assetMaintenanceService.deleteMaintenance(id);
     }
@@ -82,7 +82,7 @@ public class AssetMaintenanceController {
      * POST /api/maintenance/{id}/approve
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('archive:maintenance:approve')")
     public Result<Void> approveMaintenance(
             @PathVariable Long id,
             @RequestParam Integer approveStatus,
@@ -96,7 +96,7 @@ public class AssetMaintenanceController {
      * POST /api/maintenance/{id}/start
      */
     @PostMapping("/{id}/start")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('archive:maintenance:start')")
     public Result<Void> startMaintenance(
             @PathVariable Long id,
             @RequestParam Long maintainerId,
@@ -109,7 +109,7 @@ public class AssetMaintenanceController {
      * POST /api/maintenance/{id}/complete
      */
     @PostMapping("/{id}/complete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('archive:maintenance:complete')")
     public Result<Void> completeMaintenance(
             @PathVariable Long id,
             @RequestParam Integer maintenanceResult,
@@ -123,7 +123,7 @@ public class AssetMaintenanceController {
      * POST /api/maintenance/{id}/cancel
      */
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('archive:maintenance:cancel')")
     public Result<Void> cancelMaintenance(@PathVariable Long id) {
         return assetMaintenanceService.cancelMaintenance(id);
     }

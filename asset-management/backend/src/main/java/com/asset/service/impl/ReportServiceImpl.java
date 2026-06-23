@@ -7,12 +7,14 @@ import com.asset.entity.AssetCard;
 import com.asset.entity.AssetDisposal;
 import com.asset.repository.AssetCardMapper;
 import com.asset.repository.AssetDisposalMapper;
+import com.asset.service.DataPermissionService;
 import com.asset.service.ReportService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.time.LocalDate;
@@ -29,10 +31,14 @@ public class ReportServiceImpl implements ReportService {
 
     private final AssetCardMapper assetCardMapper;
     private final AssetDisposalMapper assetDisposalMapper;
+    private final DataPermissionService dataPermissionService;
 
-    public ReportServiceImpl(AssetCardMapper assetCardMapper, AssetDisposalMapper assetDisposalMapper) {
+    public ReportServiceImpl(AssetCardMapper assetCardMapper,
+                             AssetDisposalMapper assetDisposalMapper,
+                             DataPermissionService dataPermissionService) {
         this.assetCardMapper = assetCardMapper;
         this.assetDisposalMapper = assetDisposalMapper;
+        this.dataPermissionService = dataPermissionService;
     }
 
     @Override
@@ -40,9 +46,16 @@ public class ReportServiceImpl implements ReportService {
         // 构建查询条件
         LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetCard::getDeleted, 0);
-        
-        if (departmentId != null) {
-            wrapper.eq(AssetCard::getDepartmentId, departmentId);
+
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(departmentId);
+        if (dataPermissionService.shouldRestrictToOwnDepartment()) {
+            if (scopedDepartmentId == null) {
+                wrapper.eq(AssetCard::getDepartmentId, -1L);
+            } else {
+                wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
+            }
+        } else if (scopedDepartmentId != null) {
+            wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
         }
         
         // 日期范围筛选（基于创建时间）
@@ -129,6 +142,7 @@ public class ReportServiceImpl implements ReportService {
         
         LambdaQueryWrapper<AssetDisposal> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetDisposal::getDeleted, 0);
+        applyDisposalDepartmentScope(wrapper);
         
         // 日期范围筛选
         if (startDate != null && !startDate.isEmpty()) {
@@ -152,6 +166,7 @@ public class ReportServiceImpl implements ReportService {
         // 统计数据
         LambdaQueryWrapper<AssetDisposal> countWrapper = new LambdaQueryWrapper<>();
         countWrapper.eq(AssetDisposal::getDeleted, 0);
+        applyDisposalDepartmentScope(countWrapper);
         if (startDate != null && !startDate.isEmpty()) {
             LocalDateTime startDateTime = LocalDate.parse(startDate).atStartOfDay();
             countWrapper.ge(AssetDisposal::getApplyTime, startDateTime);
@@ -200,6 +215,7 @@ public class ReportServiceImpl implements ReportService {
         wrapper.eq(AssetCard::getDeleted, 0);
         // 只查询在用的资产
         wrapper.in(AssetCard::getStatus, Arrays.asList(0, 1, 2));
+        applyAssetDepartmentScope(wrapper);
         
         // 分类筛选
         if (categoryId != null) {
@@ -314,9 +330,16 @@ public class ReportServiceImpl implements ReportService {
             // 查询数据
             LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(AssetCard::getDeleted, 0);
-            
-            if (departmentId != null) {
-                wrapper.eq(AssetCard::getDepartmentId, departmentId);
+
+            Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(departmentId);
+            if (dataPermissionService.shouldRestrictToOwnDepartment()) {
+                if (scopedDepartmentId == null) {
+                    wrapper.eq(AssetCard::getDepartmentId, -1L);
+                } else {
+                    wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
+                }
+            } else if (scopedDepartmentId != null) {
+                wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
             }
             
             if (startDate != null && !startDate.isEmpty()) {
@@ -368,6 +391,7 @@ public class ReportServiceImpl implements ReportService {
             // 查询数据
             LambdaQueryWrapper<AssetDisposal> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(AssetDisposal::getDeleted, 0);
+            applyDisposalDepartmentScope(wrapper);
             
             if (startDate != null && !startDate.isEmpty()) {
                 LocalDateTime startDateTime = LocalDate.parse(startDate).atStartOfDay();
@@ -424,6 +448,7 @@ public class ReportServiceImpl implements ReportService {
             LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(AssetCard::getDeleted, 0);
             wrapper.in(AssetCard::getStatus, Arrays.asList(0, 1, 2));
+            applyAssetDepartmentScope(wrapper);
             
             if (categoryId != null) {
                 wrapper.eq(AssetCard::getCategoryId, categoryId);
@@ -532,10 +557,31 @@ public class ReportServiceImpl implements ReportService {
         };
     }
 
+    private void applyAssetDepartmentScope(LambdaQueryWrapper<AssetCard> wrapper) {
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(null);
+        if (dataPermissionService.shouldRestrictToOwnDepartment()) {
+            if (scopedDepartmentId == null) {
+                wrapper.eq(AssetCard::getDepartmentId, -1L);
+                return;
+            }
+            wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
+        }
+    }
+
+    private void applyDisposalDepartmentScope(LambdaQueryWrapper<AssetDisposal> wrapper) {
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(null);
+        if (dataPermissionService.shouldRestrictToOwnDepartment()) {
+            if (scopedDepartmentId == null) {
+                wrapper.eq(AssetDisposal::getDepartmentId, -1L);
+                return;
+            }
+            wrapper.eq(AssetDisposal::getDepartmentId, scopedDepartmentId);
+        }
+    }
+
     /**
      * 统计报表导出 VO
      */
-    @com.alibaba.excel.annotation.ExcelProperty(value = "资产编号", index = 0)
     @lombok.Data
     public static class StatisticsExportVO implements Serializable {
         private static final long serialVersionUID = 1L;

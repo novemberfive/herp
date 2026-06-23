@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>资产列表</span>
-          <el-button type="primary" @click="handleCreate">
+          <el-button v-if="userStore.hasPermission('asset:create')" type="primary" @click="handleCreate">
             <el-icon><Plus /></el-icon>
             新增资产
           </el-button>
@@ -48,8 +48,8 @@
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="userStore.hasPermission('asset:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="userStore.hasPermission('asset:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -74,8 +74,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAssetList, deleteAsset } from '@/api/asset'
+import { useUserStore } from '@/store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 

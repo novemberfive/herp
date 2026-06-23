@@ -4,6 +4,8 @@ import com.asset.dto.Result;
 import com.asset.entity.AssetTransfer;
 import com.asset.repository.AssetTransferMapper;
 import com.asset.service.AssetTransferService;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -19,9 +21,15 @@ import java.util.Map;
 public class AssetTransferServiceImpl implements AssetTransferService {
 
     private final AssetTransferMapper assetTransferMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
 
-    public AssetTransferServiceImpl(AssetTransferMapper assetTransferMapper) {
+    public AssetTransferServiceImpl(AssetTransferMapper assetTransferMapper,
+                                    DataPermissionService dataPermissionService,
+                                    OperationLogService operationLogService) {
         this.assetTransferMapper = assetTransferMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
 
     @Override
@@ -30,6 +38,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         
         LambdaQueryWrapper<AssetTransfer> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetTransfer::getDeleted, 0);
+        Result<Map<String, Object>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         
         if (approveStatus != null) {
             wrapper.eq(AssetTransfer::getApproveStatus, approveStatus);
@@ -59,6 +71,9 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         if (transfer == null || transfer.getDeleted() == 1) {
             return Result.error("调拨记录不存在");
         }
+        if (!canAccessTransfer(transfer)) {
+            return Result.forbidden("无权查看该调拨记录");
+        }
         return Result.success(transfer);
     }
 
@@ -75,7 +90,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         transfer.setTransferStatus(0); // 待调拨
         
         assetTransferMapper.insert(transfer);
-        return Result.success("调拨申请创建成功", null);
+        Result<Void> result = Result.success("调拨申请创建成功", null);
+        operationLogService.record("MANAGEMENT", "CREATE_TRANSFER", "asset_transfer",
+            String.valueOf(transfer.getId()), "创建调拨单：" + transfer.getTransferCode(), result);
+        return result;
     }
 
     @Override
@@ -92,7 +110,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         }
         
         assetTransferMapper.updateById(transfer);
-        return Result.success("调拨信息更新成功", null);
+        Result<Void> result = Result.success("调拨信息更新成功", null);
+        operationLogService.record("MANAGEMENT", "UPDATE_TRANSFER", "asset_transfer",
+            String.valueOf(transfer.getId()), "更新调拨单：" + existing.getTransferCode(), result);
+        return result;
     }
 
     @Override
@@ -105,7 +126,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         
         transfer.setDeleted(1);
         assetTransferMapper.updateById(transfer);
-        return Result.success("调拨记录删除成功", null);
+        Result<Void> result = Result.success("调拨记录删除成功", null);
+        operationLogService.record("MANAGEMENT", "DELETE_TRANSFER", "asset_transfer",
+            String.valueOf(transfer.getId()), "删除调拨单：" + transfer.getTransferCode(), result);
+        return result;
     }
 
     @Override
@@ -133,7 +157,11 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         }
         
         assetTransferMapper.updateById(transfer);
-        return Result.success("调拨申请审批完成", null);
+        Result<Void> result = Result.success("调拨申请审批完成", null);
+        operationLogService.record("MANAGEMENT", approveStatus == 1 ? "APPROVE_TRANSFER" : "REJECT_TRANSFER",
+            "asset_transfer", String.valueOf(transfer.getId()),
+            (approveStatus == 1 ? "审批通过调拨单：" : "审批拒绝调拨单：") + transfer.getTransferCode(), result);
+        return result;
     }
 
     @Override
@@ -152,7 +180,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         transfer.setCompleteTime(LocalDateTime.now());
         
         assetTransferMapper.updateById(transfer);
-        return Result.success("调拨已完成", null);
+        Result<Void> result = Result.success("调拨已完成", null);
+        operationLogService.record("MANAGEMENT", "COMPLETE_TRANSFER", "asset_transfer",
+            String.valueOf(transfer.getId()), "完成调拨单：" + transfer.getTransferCode(), result);
+        return result;
     }
 
     @Override
@@ -169,7 +200,10 @@ public class AssetTransferServiceImpl implements AssetTransferService {
         
         transfer.setTransferStatus(3); // 已取消
         assetTransferMapper.updateById(transfer);
-        return Result.success("调拨已取消", null);
+        Result<Void> result = Result.success("调拨已取消", null);
+        operationLogService.record("MANAGEMENT", "CANCEL_TRANSFER", "asset_transfer",
+            String.valueOf(transfer.getId()), "取消调拨单：" + transfer.getTransferCode(), result);
+        return result;
     }
 
     /**
@@ -179,5 +213,28 @@ public class AssetTransferServiceImpl implements AssetTransferService {
     private String generateTransferCode() {
         return "TR" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                + String.format("%04d", (int)(Math.random() * 10000));
+    }
+
+    private Result<Map<String, Object>> applyDepartmentScope(LambdaQueryWrapper<AssetTransfer> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看调拨记录");
+        }
+        wrapper.and(scope -> scope
+            .eq(AssetTransfer::getFromDepartmentId, departmentId)
+            .or()
+            .eq(AssetTransfer::getToDepartmentId, departmentId));
+        return null;
+    }
+
+    private boolean canAccessTransfer(AssetTransfer transfer) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return true;
+        }
+        return dataPermissionService.canAccessDepartment(transfer.getFromDepartmentId())
+            || dataPermissionService.canAccessDepartment(transfer.getToDepartmentId());
     }
 }

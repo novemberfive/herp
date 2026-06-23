@@ -14,7 +14,9 @@ public interface AssetDisposalService {
     /**
      * 分页查询资产处置列表
      */
-    Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType, Integer approveStatus, Integer disposalStatus);
+    Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType,
+                                                Integer approveStatus, Integer disposalStatus,
+                                                String disposalNo, String assetCode, String assetName);
 
     /**
      * 根据 ID 查询资产处置详情

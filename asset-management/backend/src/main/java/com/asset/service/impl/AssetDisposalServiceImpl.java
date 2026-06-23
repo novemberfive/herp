@@ -4,6 +4,7 @@ import com.asset.dto.Result;
 import com.asset.entity.AssetDisposal;
 import com.asset.repository.AssetDisposalMapper;
 import com.asset.service.AssetDisposalService;
+import com.asset.service.OperationLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,18 @@ import java.util.Map;
 public class AssetDisposalServiceImpl implements AssetDisposalService {
 
     private final AssetDisposalMapper assetDisposalMapper;
+    private final OperationLogService operationLogService;
 
-    public AssetDisposalServiceImpl(AssetDisposalMapper assetDisposalMapper) {
+    public AssetDisposalServiceImpl(AssetDisposalMapper assetDisposalMapper,
+                                    OperationLogService operationLogService) {
         this.assetDisposalMapper = assetDisposalMapper;
+        this.operationLogService = operationLogService;
     }
 
     @Override
-    public Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType, Integer approveStatus, Integer disposalStatus) {
+    public Result<Map<String, Object>> getDisposalList(Integer pageNum, Integer pageSize, Integer disposalType,
+                                                       Integer approveStatus, Integer disposalStatus,
+                                                       String disposalNo, String assetCode, String assetName) {
         Page<AssetDisposal> page = new Page<>(pageNum, pageSize);
         
         LambdaQueryWrapper<AssetDisposal> wrapper = new LambdaQueryWrapper<>();
@@ -43,6 +49,15 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         
         if (disposalStatus != null) {
             wrapper.eq(AssetDisposal::getDisposalStatus, disposalStatus);
+        }
+        if (disposalNo != null && !disposalNo.isEmpty()) {
+            wrapper.like(AssetDisposal::getDisposalNo, disposalNo);
+        }
+        if (assetCode != null && !assetCode.isEmpty()) {
+            wrapper.like(AssetDisposal::getAssetCode, assetCode);
+        }
+        if (assetName != null && !assetName.isEmpty()) {
+            wrapper.like(AssetDisposal::getAssetName, assetName);
         }
         
         wrapper.orderByDesc(AssetDisposal::getApplyTime);
@@ -85,7 +100,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         disposal.setApplyTime(LocalDateTime.now());
         
         assetDisposalMapper.insert(disposal);
-        return Result.success("资产处置申请创建成功", null);
+        Result<Void> result = Result.success("资产处置申请创建成功", null);
+        operationLogService.record("DISPOSAL", "CREATE_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "创建处置单：" + disposal.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -103,7 +121,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         
         disposal.setUpdateTime(LocalDateTime.now());
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置申请更新成功", null);
+        Result<Void> result = Result.success("资产处置申请更新成功", null);
+        operationLogService.record("DISPOSAL", "UPDATE_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "更新处置单：" + existing.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -117,7 +138,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         disposal.setDeleted(1);
         disposal.setUpdateTime(LocalDateTime.now());
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置申请删除成功", null);
+        Result<Void> result = Result.success("资产处置申请删除成功", null);
+        operationLogService.record("DISPOSAL", "DELETE_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "删除处置单：" + disposal.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -145,7 +169,11 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         }
         
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置申请审批完成", null);
+        Result<Void> result = Result.success("资产处置申请审批完成", null);
+        operationLogService.record("DISPOSAL", approveStatus == 1 ? "APPROVE_DISPOSAL" : "REJECT_DISPOSAL",
+            "asset_disposal", String.valueOf(disposal.getId()),
+            (approveStatus == 1 ? "审批通过处置单：" : "审批拒绝处置单：") + disposal.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -173,7 +201,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         disposal.setUpdateTime(LocalDateTime.now());
         
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置开始执行", null);
+        Result<Void> result = Result.success("资产处置开始执行", null);
+        operationLogService.record("DISPOSAL", "EXECUTE_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "开始执行处置单：" + disposal.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -193,7 +224,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         disposal.setUpdateTime(LocalDateTime.now());
         
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置已完成", null);
+        Result<Void> result = Result.success("资产处置已完成", null);
+        operationLogService.record("DISPOSAL", "COMPLETE_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "完成处置单：" + disposal.getDisposalNo(), result);
+        return result;
     }
 
     @Override
@@ -214,7 +248,10 @@ public class AssetDisposalServiceImpl implements AssetDisposalService {
         disposal.setUpdateTime(LocalDateTime.now());
         
         assetDisposalMapper.updateById(disposal);
-        return Result.success("资产处置已取消", null);
+        Result<Void> result = Result.success("资产处置已取消", null);
+        operationLogService.record("DISPOSAL", "CANCEL_DISPOSAL", "asset_disposal",
+            String.valueOf(disposal.getId()), "取消处置单：" + disposal.getDisposalNo(), result);
+        return result;
     }
 
     /**

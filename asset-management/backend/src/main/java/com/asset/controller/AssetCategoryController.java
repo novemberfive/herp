@@ -27,7 +27,7 @@ public class AssetCategoryController {
      * GET /api/categories/list
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:category')")
     public Result<List<AssetCategory>> getCategoryList() {
         return assetCategoryService.getCategoryList();
     }
@@ -37,7 +37,7 @@ public class AssetCategoryController {
      * GET /api/categories/parent/{parentId}
      */
     @GetMapping("/parent/{parentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:category')")
     public Result<List<AssetCategory>> getCategoryByParentId(@PathVariable Long parentId) {
         return assetCategoryService.getCategoryByParentId(parentId);
     }
@@ -47,7 +47,7 @@ public class AssetCategoryController {
      * GET /api/categories/top-level
      */
     @GetMapping("/top-level")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('basic:category')")
     public Result<List<AssetCategory>> getTopLevelCategories() {
         return assetCategoryService.getTopLevelCategories();
     }
@@ -57,7 +57,7 @@ public class AssetCategoryController {
      * POST /api/categories
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:category:create')")
     public Result<Void> createCategory(@Valid @RequestBody AssetCategory category) {
         return assetCategoryService.createCategory(category);
     }
@@ -67,7 +67,7 @@ public class AssetCategoryController {
      * PUT /api/categories
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('basic:category:edit')")
     public Result<Void> updateCategory(@Valid @RequestBody AssetCategory category) {
         return assetCategoryService.updateCategory(category);
     }
@@ -77,7 +77,7 @@ public class AssetCategoryController {
      * DELETE /api/categories/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('basic:category:delete')")
     public Result<Void> deleteCategory(@PathVariable Long id) {
         return assetCategoryService.deleteCategory(id);
     }

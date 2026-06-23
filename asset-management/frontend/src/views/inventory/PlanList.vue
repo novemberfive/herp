@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>盘点计划</span>
-          <el-button type="primary" @click="handleCreate">
+          <el-button v-if="userStore.hasPermission('inventory:plan:create')" type="primary" @click="handleCreate">
             <el-icon><Plus /></el-icon>
             新建计划
           </el-button>
@@ -61,9 +61,9 @@
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="userStore.hasPermission('inventory:plan:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button 
-              v-if="row.status === 1" 
+              v-if="row.status === 1 && userStore.hasPermission('inventory:plan:execute')"
               link 
               type="warning" 
               @click="handleExecute(row)"
@@ -71,7 +71,7 @@
               执行
             </el-button>
             <el-button 
-              v-if="row.status === 1" 
+              v-if="row.status === 1 && userStore.hasPermission('inventory:plan:disable')"
               link 
               type="info" 
               @click="handleDisable(row)"
@@ -79,7 +79,7 @@
               停用
             </el-button>
             <el-button 
-              v-if="row.status === 0" 
+              v-if="row.status === 0 && userStore.hasPermission('inventory:plan:enable')"
               link 
               type="success" 
               @click="handleEnable(row)"
@@ -207,8 +207,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import { getPlanList, getPlanById, createPlan, updatePlan, deletePlan, executePlan, enablePlan, disablePlan } from '@/api/inventory'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const submitLoading = ref(false)
 const tableData = ref([])

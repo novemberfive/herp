@@ -6,6 +6,8 @@ import com.asset.entity.AssetRequisition;
 import com.asset.repository.AssetRequisitionRepository;
 import com.asset.repository.SysUserMapper;
 import com.asset.service.AssetRequisitionService;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.asset.util.UserContextUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,10 +25,17 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
     
     private final AssetRequisitionRepository assetRequisitionRepository;
     private final SysUserMapper sysUserMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
     
-    public AssetRequisitionServiceImpl(AssetRequisitionRepository assetRequisitionRepository, SysUserMapper sysUserMapper) {
+    public AssetRequisitionServiceImpl(AssetRequisitionRepository assetRequisitionRepository,
+                                       SysUserMapper sysUserMapper,
+                                       DataPermissionService dataPermissionService,
+                                       OperationLogService operationLogService) {
         this.assetRequisitionRepository = assetRequisitionRepository;
         this.sysUserMapper = sysUserMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
     
     @Override
@@ -56,6 +65,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         }
         
         wrapper.eq(AssetRequisition::getDeleted, 0);
+        Result<PageResult<AssetRequisition>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         wrapper.orderByDesc(AssetRequisition::getCreateTime);
         
         Page<AssetRequisition> resultPage = assetRequisitionRepository.selectPage(page, wrapper);
@@ -74,6 +87,9 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         AssetRequisition requisition = assetRequisitionRepository.selectById(id);
         if (requisition == null || requisition.getDeleted() == 1) {
             return Result.error("资产领用退库记录不存在");
+        }
+        if (!canAccessRequisition(requisition)) {
+            return Result.forbidden("无权查看该领用退库记录");
         }
         return Result.success(requisition);
     }
@@ -96,7 +112,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
             requisition.setActualReturnDate(LocalDateTime.now());
         }
         assetRequisitionRepository.insert(requisition);
-        return Result.success("资产领用退库创建成功", null);
+        Result<Void> result = Result.success("资产领用退库创建成功", null);
+        operationLogService.record("MANAGEMENT", "CREATE_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "创建领用退库单：" + requisition.getRequisitionNo(), result);
+        return result;
     }
     
     @Override
@@ -111,7 +130,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         }
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
-        return Result.success("资产领用退库更新成功", null);
+        Result<Void> result = Result.success("资产领用退库更新成功", null);
+        operationLogService.record("MANAGEMENT", "UPDATE_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "更新领用退库单：" + existing.getRequisitionNo(), result);
+        return result;
     }
     
     @Override
@@ -126,7 +148,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         }
         requisition.setDeleted(1);
         assetRequisitionRepository.updateById(requisition);
-        return Result.success("资产领用退库记录删除成功", null);
+        Result<Void> result = Result.success("资产领用退库记录删除成功", null);
+        operationLogService.record("MANAGEMENT", "DELETE_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "删除领用退库单：" + requisition.getRequisitionNo(), result);
+        return result;
     }
     
     @Override
@@ -143,7 +168,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         requisition.setStatus(1); // 待审批
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
-        return Result.success("提交审批成功", null);
+        Result<Void> result = Result.success("提交审批成功", null);
+        operationLogService.record("MANAGEMENT", "SUBMIT_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "提交领用退库单：" + requisition.getRequisitionNo(), result);
+        return result;
     }
     
     @Override
@@ -170,7 +198,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
-        return Result.success("审批通过", null);
+        Result<Void> result = Result.success("审批通过", null);
+        operationLogService.record("MANAGEMENT", "APPROVE_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "审批通过领用退库单：" + requisition.getRequisitionNo(), result);
+        return result;
     }
     
     @Override
@@ -197,7 +228,10 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
         
         requisition.setUpdateTime(LocalDateTime.now());
         assetRequisitionRepository.updateById(requisition);
-        return Result.success("审批拒绝", null);
+        Result<Void> result = Result.success("审批拒绝", null);
+        operationLogService.record("MANAGEMENT", "REJECT_REQUISITION", "asset_requisition",
+            String.valueOf(requisition.getId()), "审批拒绝领用退库单：" + requisition.getRequisitionNo(), result);
+        return result;
     }
     
     /**
@@ -214,5 +248,28 @@ public class AssetRequisitionServiceImpl implements AssetRequisitionService {
     private String generateRequisitionNo() {
         return "RQ" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) 
                + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    }
+
+    private Result<PageResult<AssetRequisition>> applyDepartmentScope(LambdaQueryWrapper<AssetRequisition> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看领用退库记录");
+        }
+        wrapper.and(scope -> scope
+            .eq(AssetRequisition::getOriginalDepartmentId, departmentId)
+            .or()
+            .eq(AssetRequisition::getNewDepartmentId, departmentId));
+        return null;
+    }
+
+    private boolean canAccessRequisition(AssetRequisition requisition) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return true;
+        }
+        return dataPermissionService.canAccessDepartment(requisition.getOriginalDepartmentId())
+            || dataPermissionService.canAccessDepartment(requisition.getNewDepartmentId());
     }
 }

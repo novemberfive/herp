@@ -27,13 +27,17 @@ public class AssetBorrowController {
      * GET /api/asset/borrow/list?pageNum=1&pageSize=10&borrowStatus=1&borrowerId=1
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('management:borrow')")
     public Result<Map<String, Object>> getBorrowList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Integer borrowStatus,
-            @RequestParam(required = false) Long borrowerId) {
-        return assetBorrowService.getBorrowList(pageNum, pageSize, borrowStatus, borrowerId);
+            @RequestParam(required = false) Long borrowerId,
+            @RequestParam(required = false) String borrowNo,
+            @RequestParam(required = false) String assetCode,
+            @RequestParam(required = false) String assetName,
+            @RequestParam(required = false) String borrowerName) {
+        return assetBorrowService.getBorrowList(pageNum, pageSize, borrowStatus, borrowerId, borrowNo, assetCode, assetName, borrowerName);
     }
 
     /**
@@ -41,7 +45,7 @@ public class AssetBorrowController {
      * GET /api/asset/borrow/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('management:borrow')")
     public Result<AssetBorrow> getBorrowById(@PathVariable Long id) {
         return assetBorrowService.getBorrowById(id);
     }
@@ -51,7 +55,7 @@ public class AssetBorrowController {
      * POST /api/asset/borrow
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:create')")
     public Result<Void> createBorrow(@Valid @RequestBody AssetBorrow borrow) {
         return assetBorrowService.createBorrow(borrow);
     }
@@ -61,7 +65,7 @@ public class AssetBorrowController {
      * PUT /api/asset/borrow
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:edit')")
     public Result<Void> updateBorrow(@Valid @RequestBody AssetBorrow borrow) {
         return assetBorrowService.updateBorrow(borrow);
     }
@@ -71,7 +75,7 @@ public class AssetBorrowController {
      * DELETE /api/asset/borrow/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('management:borrow:delete')")
     public Result<Void> deleteBorrow(@PathVariable Long id) {
         return assetBorrowService.deleteBorrow(id);
     }
@@ -81,7 +85,7 @@ public class AssetBorrowController {
      * POST /api/asset/borrow/{id}/approve?approverId=1&approverName=张三&approveStatus=1&approveRemark=同意
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:approve')")
     public Result<Void> approveBorrow(
             @PathVariable Long id,
             @RequestParam Long approverId,
@@ -96,7 +100,7 @@ public class AssetBorrowController {
      * POST /api/asset/borrow/{id}/return?returnCondition=良好&returnRemark=xxx
      */
     @PostMapping("/{id}/return")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:return')")
     public Result<Void> returnAsset(
             @PathVariable Long id,
             @RequestParam(required = false) String returnCondition,
@@ -109,7 +113,7 @@ public class AssetBorrowController {
      * POST /api/asset/borrow/{id}/cancel?reason=xxx
      */
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:cancel')")
     public Result<Void> cancelBorrow(
             @PathVariable Long id,
             @RequestParam(required = false) String reason) {
@@ -121,7 +125,7 @@ public class AssetBorrowController {
      * POST /api/asset/borrow/{id}/remind
      */
     @PostMapping("/{id}/remind")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:borrow:remind')")
     public Result<Void> sendOverdueReminder(@PathVariable Long id) {
         return assetBorrowService.sendOverdueReminder(id);
     }

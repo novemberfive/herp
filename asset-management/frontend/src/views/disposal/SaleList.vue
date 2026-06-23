@@ -43,7 +43,7 @@
     <!-- 列表区 -->
     <el-card class="table-card">
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="userStore.hasPermission('disposal:sale:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新建出售/捐赠申请
         </el-button>
@@ -99,10 +99,12 @@
         <el-table-column label="操作" fixed="right" width="280">
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
-            <el-button link type="success" @click="handleApprove(row)" v-if="row.approveStatus === 0">审批</el-button>
-            <el-button link type="warning" @click="handleExecute(row)" v-if="row.approveStatus === 1 && row.disposalStatus === 0">执行</el-button>
-            <el-button link type="success" @click="handleComplete(row)" v-if="row.disposalStatus === 1">完成</el-button>
-            <el-button link type="danger" @click="handleCancel(row)" v-if="row.disposalStatus !== 2 && row.disposalStatus !== 3">取消</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:edit')" link type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:approve')" link type="success" @click="handleApprove(row)">审批</el-button>
+            <el-button v-if="row.approveStatus === 1 && row.disposalStatus === 0 && userStore.hasPermission('disposal:sale:execute')" link type="warning" @click="handleExecute(row)">执行</el-button>
+            <el-button v-if="row.disposalStatus === 1 && userStore.hasPermission('disposal:sale:complete')" link type="success" @click="handleComplete(row)">完成</el-button>
+            <el-button v-if="row.approveStatus === 0 && userStore.hasPermission('disposal:sale:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="row.disposalStatus !== 2 && row.disposalStatus !== 3 && userStore.hasPermission('disposal:sale:cancel')" link type="danger" @click="handleCancel(row)">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -120,6 +122,97 @@
         />
       </div>
     </el-card>
+
+    <!-- 新建/编辑处置申请对话框 -->
+    <el-dialog v-model="formDialogVisible" :title="form.id ? '编辑出售/捐赠申请' : '新建出售/捐赠申请'" width="860px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="处置类型" prop="disposalType">
+              <el-select v-model="form.disposalType" placeholder="请选择处置类型" style="width: 100%">
+                <el-option label="出售" :value="2" />
+                <el-option label="捐赠" :value="3" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="资产编码" prop="assetCode">
+              <el-input v-model="form.assetCode" placeholder="请输入资产编码" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="资产名称" prop="assetName">
+              <el-input v-model="form.assetName" placeholder="请输入资产名称" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="规格型号" prop="specification">
+              <el-input v-model="form.specification" placeholder="请输入规格型号" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="分类名称" prop="categoryName">
+              <el-input v-model="form.categoryName" placeholder="请输入分类名称" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="申请部门" prop="departmentName">
+              <el-input v-model="form.departmentName" placeholder="请输入申请部门" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="原值" prop="originalValue">
+              <el-input-number v-model="form.originalValue" :min="0" :precision="2" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="净值" prop="netValue">
+              <el-input-number v-model="form.netValue" :min="0" :precision="2" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="评估价值" prop="estimatedValue">
+              <el-input-number v-model="form.estimatedValue" :min="0" :precision="2" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="申请人" prop="applicantName">
+              <el-input v-model="form.applicantName" placeholder="请输入申请人" clearable />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="受让方" prop="buyerName">
+              <el-input v-model="form.buyerName" placeholder="请输入受让方名称" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="联系方式" prop="buyerContact">
+              <el-input v-model="form.buyerContact" placeholder="请输入受让方联系方式" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="处置原因" prop="disposalReason">
+          <el-input v-model="form.disposalReason" type="textarea" :rows="3" placeholder="请输入处置原因" />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="formDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitForm">确定</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 审批对话框 -->
     <el-dialog v-model="approveDialogVisible" title="审批处置申请" width="500px">
@@ -225,14 +318,19 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
+const formDialogVisible = ref(false)
 const approveDialogVisible = ref(false)
 const executeDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const currentRow = ref(null)
+const formRef = ref(null)
 
 const queryForm = reactive({
   disposalNo: '',
@@ -261,6 +359,33 @@ const executeForm = reactive({
   buyerContact: ''
 })
 
+const form = reactive({
+  id: null,
+  disposalType: 2,
+  assetCode: '',
+  assetName: '',
+  specification: '',
+  categoryName: '',
+  originalValue: 0,
+  netValue: 0,
+  estimatedValue: 0,
+  buyerName: '',
+  buyerContact: '',
+  applicantName: '',
+  departmentName: '',
+  disposalReason: '',
+  remark: ''
+})
+
+const rules = {
+  disposalType: [{ required: true, message: '请选择处置类型', trigger: 'change' }],
+  assetCode: [{ required: true, message: '请输入资产编码', trigger: 'blur' }],
+  assetName: [{ required: true, message: '请输入资产名称', trigger: 'blur' }],
+  originalValue: [{ required: true, message: '请输入原值', trigger: 'blur' }],
+  netValue: [{ required: true, message: '请输入净值', trigger: 'blur' }],
+  disposalReason: [{ required: true, message: '请输入处置原因', trigger: 'blur' }]
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
@@ -271,8 +396,9 @@ const fetchData = async () => {
     }
     const res = await request.get('/asset/disposal/list', { params })
     if (res.code === 200) {
-      tableData.value = res.data.records
-      pagination.total = res.data.total
+      const list = res.data.list || []
+      tableData.value = list.filter(item => [2, 3].includes(item.disposalType))
+      pagination.total = queryForm.disposalType ? res.data.total : tableData.value.length
     } else {
       ElMessage.error(res.message || '获取数据失败')
     }
@@ -299,7 +425,29 @@ const handleReset = () => {
 }
 
 const handleCreate = () => {
-  ElMessage.info('新建出售/捐赠申请功能待实现')
+  resetForm()
+  formDialogVisible.value = true
+}
+
+const resetForm = () => {
+  Object.assign(form, {
+    id: null,
+    disposalType: 2,
+    assetCode: '',
+    assetName: '',
+    specification: '',
+    categoryName: '',
+    originalValue: 0,
+    netValue: 0,
+    estimatedValue: 0,
+    buyerName: '',
+    buyerContact: '',
+    applicantName: '',
+    departmentName: '',
+    disposalReason: '',
+    remark: ''
+  })
+  formRef.value?.clearValidate()
 }
 
 const handleView = async (row) => {
@@ -313,6 +461,45 @@ const handleView = async (row) => {
     }
   } catch (error) {
     ElMessage.error('获取详情失败')
+  }
+}
+
+const handleEdit = async (row) => {
+  try {
+    const res = await request.get(`/asset/disposal/${row.id}`)
+    if (res.code === 200) {
+      resetForm()
+      Object.assign(form, res.data)
+      formDialogVisible.value = true
+    } else {
+      ElMessage.error('获取详情失败')
+    }
+  } catch (error) {
+    ElMessage.error('获取详情失败')
+  }
+}
+
+const submitForm = async () => {
+  if (!formRef.value) return
+  try {
+    await formRef.value.validate()
+    if (![2, 3].includes(form.disposalType)) {
+      ElMessage.warning('处置类型只能选择出售或捐赠')
+      return
+    }
+    if (form.id) {
+      await request.put('/asset/disposal', form)
+      ElMessage.success('更新成功')
+    } else {
+      await request.post('/asset/disposal', form)
+      ElMessage.success('创建成功')
+    }
+    formDialogVisible.value = false
+    fetchData()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.response?.data?.message || '保存失败')
+    }
   }
 }
 
@@ -394,6 +581,23 @@ const handleComplete = async (row) => {
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('完成操作失败')
+    }
+  }
+}
+
+const handleDelete = async (row) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该处置申请吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await request.delete(`/asset/disposal/${row.id}`)
+    ElMessage.success('删除成功')
+    fetchData()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('删除失败')
     }
   }
 }

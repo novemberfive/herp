@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { login, logout, getUserInfo } from '@/api/auth'
+import { ROLE_PERMISSION_MAP, expandPermissions } from '@/constants/permissions'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -12,7 +13,17 @@ export const useUserStore = defineStore('user', {
     isLoggedIn: (state) => !!state.token,
     username: (state) => state.userInfo.username || '',
     realName: (state) => state.userInfo.realName || '',
-    role: (state) => state.userInfo.role || ''
+    role: (state) => state.userInfo.role || '',
+    permissions: (state) => expandPermissions(state.userInfo.permissions?.length ? state.userInfo.permissions : (ROLE_PERMISSION_MAP[state.userInfo.role] || [])),
+    hasPermission: (state) => (permission) => {
+      if (!permission) return true
+      const permissions = expandPermissions(state.userInfo.permissions?.length ? state.userInfo.permissions : (ROLE_PERMISSION_MAP[state.userInfo.role] || []))
+      return permissions.includes(permission)
+    },
+    hasAnyPermission: (state) => (permissionsToCheck = []) => {
+      const permissions = expandPermissions(state.userInfo.permissions?.length ? state.userInfo.permissions : (ROLE_PERMISSION_MAP[state.userInfo.role] || []))
+      return permissionsToCheck.some(permission => permissions.includes(permission))
+    }
   },
   
   actions: {

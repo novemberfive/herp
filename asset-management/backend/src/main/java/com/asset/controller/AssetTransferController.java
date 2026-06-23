@@ -27,7 +27,7 @@ public class AssetTransferController {
      * GET /api/transfers/list?pageNum=1&pageSize=10&approveStatus=1&transferStatus=2
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('management:transfer')")
     public Result<Map<String, Object>> getTransferList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -41,7 +41,7 @@ public class AssetTransferController {
      * GET /api/transfers/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('management:transfer')")
     public Result<AssetTransfer> getTransferById(@PathVariable Long id) {
         return assetTransferService.getTransferById(id);
     }
@@ -51,7 +51,7 @@ public class AssetTransferController {
      * POST /api/transfers
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:transfer:create')")
     public Result<Void> createTransfer(@Valid @RequestBody AssetTransfer transfer) {
         return assetTransferService.createTransfer(transfer);
     }
@@ -61,7 +61,7 @@ public class AssetTransferController {
      * PUT /api/transfers
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:transfer:edit')")
     public Result<Void> updateTransfer(@Valid @RequestBody AssetTransfer transfer) {
         return assetTransferService.updateTransfer(transfer);
     }
@@ -71,7 +71,7 @@ public class AssetTransferController {
      * DELETE /api/transfers/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('management:transfer:delete')")
     public Result<Void> deleteTransfer(@PathVariable Long id) {
         return assetTransferService.deleteTransfer(id);
     }
@@ -81,7 +81,7 @@ public class AssetTransferController {
      * POST /api/transfers/{id}/approve
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('management:transfer:approve')")
     public Result<Void> approveTransfer(
             @PathVariable Long id,
             @RequestParam Integer approveStatus,
@@ -101,7 +101,7 @@ public class AssetTransferController {
      * POST /api/transfers/{id}/complete
      */
     @PostMapping("/{id}/complete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:transfer:complete')")
     public Result<Void> completeTransfer(@PathVariable Long id) {
         return assetTransferService.completeTransfer(id);
     }
@@ -111,7 +111,7 @@ public class AssetTransferController {
      * POST /api/transfers/{id}/cancel
      */
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('management:transfer:cancel')")
     public Result<Void> cancelTransfer(@PathVariable Long id) {
         return assetTransferService.cancelTransfer(id);
     }

@@ -3,6 +3,8 @@ package com.asset.service.impl;
 import com.asset.dto.Result;
 import com.asset.entity.InventoryResult;
 import com.asset.repository.InventoryResultMapper;
+import com.asset.service.DataPermissionService;
+import com.asset.service.OperationLogService;
 import com.asset.service.InventoryResultService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,9 +22,15 @@ import java.util.Map;
 public class InventoryResultServiceImpl implements InventoryResultService {
 
     private final InventoryResultMapper inventoryResultMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
 
-    public InventoryResultServiceImpl(InventoryResultMapper inventoryResultMapper) {
+    public InventoryResultServiceImpl(InventoryResultMapper inventoryResultMapper,
+                                      DataPermissionService dataPermissionService,
+                                      OperationLogService operationLogService) {
         this.inventoryResultMapper = inventoryResultMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
 
     @Override
@@ -31,6 +39,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         
         LambdaQueryWrapper<InventoryResult> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(InventoryResult::getDeleted, 0);
+        Result<Map<String, Object>> scopeResult = applyDepartmentScope(wrapper);
+        if (scopeResult != null) {
+            return scopeResult;
+        }
         
         if (taskId != null) {
             wrapper.eq(InventoryResult::getTaskId, taskId);
@@ -63,6 +75,9 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         InventoryResult result = inventoryResultMapper.selectById(id);
         if (result == null || result.getDeleted() == 1) {
             return Result.error("盘点结果不存在");
+        }
+        if (!canAccessDepartment(result.getDepartmentId())) {
+            return Result.forbidden("无权查看该盘点结果");
         }
         return Result.success(result);
     }
@@ -97,7 +112,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         }
         
         inventoryResultMapper.insert(result);
-        return Result.success("盘点结果创建成功", null);
+        Result<Void> response = Result.success("盘点结果创建成功", null);
+        operationLogService.record("INVENTORY", "CREATE_RESULT", "inventory_result",
+            String.valueOf(result.getId()), "创建盘点结果，任务：" + result.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -120,7 +138,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         
         result.setUpdateTime(LocalDateTime.now());
         inventoryResultMapper.updateById(result);
-        return Result.success("盘点结果更新成功", null);
+        Result<Void> response = Result.success("盘点结果更新成功", null);
+        operationLogService.record("INVENTORY", "UPDATE_RESULT", "inventory_result",
+            String.valueOf(result.getId()), "更新盘点结果，任务：" + existing.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -134,7 +155,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         result.setDeleted(1);
         result.setUpdateTime(LocalDateTime.now());
         inventoryResultMapper.updateById(result);
-        return Result.success("盘点结果删除成功", null);
+        Result<Void> response = Result.success("盘点结果删除成功", null);
+        operationLogService.record("INVENTORY", "DELETE_RESULT", "inventory_result",
+            String.valueOf(result.getId()), "删除盘点结果，任务：" + result.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -151,7 +175,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         result.setUpdateTime(LocalDateTime.now());
         
         inventoryResultMapper.updateById(result);
-        return Result.success("盘点结果已提交", null);
+        Result<Void> response = Result.success("盘点结果已提交", null);
+        operationLogService.record("INVENTORY", "SUBMIT_RESULT", "inventory_result",
+            String.valueOf(result.getId()), "提交盘点结果，任务：" + result.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -175,7 +202,11 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         }
         
         inventoryResultMapper.updateById(result);
-        return Result.success("盘点结果复核完成", null);
+        Result<Void> response = Result.success("盘点结果复核完成", null);
+        operationLogService.record("INVENTORY", reviewStatus == 1 ? "APPROVE_RESULT_REVIEW" : "REJECT_RESULT_REVIEW",
+            "inventory_result", String.valueOf(result.getId()),
+            (reviewStatus == 1 ? "复核通过盘点结果，任务：" : "复核驳回盘点结果，任务：") + result.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -199,7 +230,10 @@ public class InventoryResultServiceImpl implements InventoryResultService {
         result.setUpdateTime(LocalDateTime.now());
         
         inventoryResultMapper.updateById(result);
-        return Result.success("盘点结果已处理", null);
+        Result<Void> response = Result.success("盘点结果已处理", null);
+        operationLogService.record("INVENTORY", "PROCESS_RESULT", "inventory_result",
+            String.valueOf(result.getId()), "处理盘点结果，任务：" + result.getTaskNo(), response);
+        return response;
     }
 
     @Override
@@ -234,6 +268,26 @@ public class InventoryResultServiceImpl implements InventoryResultService {
             inventoryResultMapper.insert(result);
         }
         
-        return Result.success("批量导入成功，共导入" + results.size() + "条记录", null);
+        Result<Void> response = Result.success("批量导入成功，共导入" + results.size() + "条记录", null);
+        operationLogService.record("INVENTORY", "IMPORT_RESULTS", "inventory_task",
+            String.valueOf(taskId), "批量导入盘点结果，任务 ID：" + taskId + "，数量：" + results.size(), response);
+        return response;
+    }
+
+    private Result<Map<String, Object>> applyDepartmentScope(LambdaQueryWrapper<InventoryResult> wrapper) {
+        if (!dataPermissionService.shouldRestrictToOwnDepartment()) {
+            return null;
+        }
+        Long departmentId = dataPermissionService.getCurrentDepartmentId();
+        if (departmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看盘点结果");
+        }
+        wrapper.eq(InventoryResult::getDepartmentId, departmentId);
+        return null;
+    }
+
+    private boolean canAccessDepartment(Long departmentId) {
+        return !dataPermissionService.shouldRestrictToOwnDepartment()
+            || dataPermissionService.canAccessDepartment(departmentId);
     }
 }

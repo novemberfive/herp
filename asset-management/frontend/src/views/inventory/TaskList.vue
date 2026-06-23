@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>盘点任务</span>
-          <el-button type="primary" @click="handleCreate">
+          <el-button v-if="userStore.hasPermission('inventory:task:create')" type="primary" @click="handleCreate">
             <el-icon><Plus /></el-icon>
             新建任务
           </el-button>
@@ -58,7 +58,7 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
             <el-button 
-              v-if="row.status === 0" 
+              v-if="row.status === 0 && userStore.hasPermission('inventory:task:start')"
               link 
               type="success" 
               @click="handleStart(row)"
@@ -66,7 +66,7 @@
               开始
             </el-button>
             <el-button 
-              v-if="row.status === 1" 
+              v-if="row.status === 1 && userStore.hasPermission('inventory:task:complete')"
               link 
               type="warning" 
               @click="handleComplete(row)"
@@ -74,7 +74,7 @@
               完成
             </el-button>
             <el-button 
-              v-if="row.status !== 2 && row.status !== 3" 
+              v-if="row.status !== 2 && row.status !== 3 && userStore.hasPermission('inventory:task:cancel')"
               link 
               type="danger" 
               @click="handleCancel(row)"
@@ -181,9 +181,11 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import { getTaskList, createTask, updateTask, deleteTask, startTask, completeTask, cancelTask, getTaskById } from '@/api/inventory'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
 const formDialogVisible = ref(false)

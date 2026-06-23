@@ -5,11 +5,11 @@
         <div class="card-header">
           <span>盘点结果</span>
           <div>
-            <el-button type="success" @click="handleImport">
+            <el-button v-if="userStore.hasPermission('inventory:result:import')" type="success" @click="handleImport">
               <el-icon><Upload /></el-icon>
               批量导入
             </el-button>
-            <el-button type="primary" @click="handleCreate">
+            <el-button v-if="userStore.hasPermission('inventory:result:create')" type="primary" @click="handleCreate">
               <el-icon><Plus /></el-icon>
               新建记录
             </el-button>
@@ -69,7 +69,7 @@
           <template #default="{ row }">
             <el-button link type="primary" @click="handleView(row)">详情</el-button>
             <el-button 
-              v-if="row.status === 0" 
+              v-if="row.status === 0 && userStore.hasPermission('inventory:result:submit')"
               link 
               type="success" 
               @click="handleSubmit(row)"
@@ -77,7 +77,7 @@
               提交
             </el-button>
             <el-button 
-              v-if="row.status === 1" 
+              v-if="row.status === 1 && userStore.hasPermission('inventory:result:review')"
               link 
               type="warning" 
               @click="handleReview(row)"
@@ -85,7 +85,7 @@
               复核
             </el-button>
             <el-button 
-              v-if="row.status === 2" 
+              v-if="row.status === 2 && userStore.hasPermission('inventory:result:process')"
               link 
               type="primary" 
               @click="handleHandle(row)"
@@ -237,8 +237,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload, UploadFilled } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
 import { getResultList, getResultById, createResult, updateResult, deleteResult, submitResult, reviewResult, handleResult, importResult, getTaskList } from '@/api/inventory'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const submitLoading = ref(false)
 const importLoading = ref(false)

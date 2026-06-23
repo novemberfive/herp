@@ -13,7 +13,9 @@ public interface AssetBorrowService {
     /**
      * 分页查询资产借用列表
      */
-    Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus, Long borrowerId);
+    Result<Map<String, Object>> getBorrowList(Integer pageNum, Integer pageSize, Integer borrowStatus,
+                                              Long borrowerId, String borrowNo, String assetCode,
+                                              String assetName, String borrowerName);
 
     /**
      * 根据 ID 查询资产借用详情

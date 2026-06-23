@@ -28,7 +28,7 @@ public class InventoryResultController {
      * GET /api/inventory/result/list?pageNum=1&pageSize=10&taskId=1&resultType=1&reviewStatus=1
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:result')")
     public Result<Map<String, Object>> getResultList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -43,7 +43,7 @@ public class InventoryResultController {
      * GET /api/inventory/result/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:result')")
     public Result<InventoryResult> getResultById(@PathVariable Long id) {
         return inventoryResultService.getResultById(id);
     }
@@ -53,7 +53,7 @@ public class InventoryResultController {
      * POST /api/inventory/result
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:create')")
     public Result<Void> createResult(@Valid @RequestBody InventoryResult result) {
         return inventoryResultService.createResult(result);
     }
@@ -63,7 +63,7 @@ public class InventoryResultController {
      * PUT /api/inventory/result
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:edit')")
     public Result<Void> updateResult(@Valid @RequestBody InventoryResult result) {
         return inventoryResultService.updateResult(result);
     }
@@ -73,7 +73,7 @@ public class InventoryResultController {
      * DELETE /api/inventory/result/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('inventory:result:delete')")
     public Result<Void> deleteResult(@PathVariable Long id) {
         return inventoryResultService.deleteResult(id);
     }
@@ -83,7 +83,7 @@ public class InventoryResultController {
      * POST /api/inventory/result/{id}/submit
      */
     @PostMapping("/{id}/submit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:submit')")
     public Result<Void> submitResult(
             @PathVariable Long id,
             @RequestParam Long inventoryUserId,
@@ -96,7 +96,7 @@ public class InventoryResultController {
      * POST /api/inventory/result/{id}/review
      */
     @PostMapping("/{id}/review")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:review')")
     public Result<Void> reviewResult(
             @PathVariable Long id,
             @RequestParam Long reviewerId,
@@ -111,7 +111,7 @@ public class InventoryResultController {
      * POST /api/inventory/result/{id}/process
      */
     @PostMapping("/{id}/process")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:process')")
     public Result<Void> processResult(
             @PathVariable Long id,
             @RequestParam Long processUserId,
@@ -125,7 +125,7 @@ public class InventoryResultController {
      * POST /api/inventory/result/batch-import?taskId=1
      */
     @PostMapping("/batch-import")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:result:import')")
     public Result<Void> batchImportResults(
             @RequestParam Long taskId,
             @RequestBody List<InventoryResult> results) {

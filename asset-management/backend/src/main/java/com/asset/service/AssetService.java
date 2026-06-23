@@ -2,11 +2,11 @@ package com.asset.service;
 
 import com.asset.dto.Result;
 import com.asset.entity.AssetCard;
+import com.asset.entity.SysUser;
 import com.asset.repository.AssetCardMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,29 +20,43 @@ import java.util.Map;
 public class AssetService {
 
     private final AssetCardMapper assetCardMapper;
+    private final DataPermissionService dataPermissionService;
+    private final OperationLogService operationLogService;
 
-    public AssetService(AssetCardMapper assetCardMapper) {
+    public AssetService(AssetCardMapper assetCardMapper,
+                        DataPermissionService dataPermissionService,
+                        OperationLogService operationLogService) {
         this.assetCardMapper = assetCardMapper;
+        this.dataPermissionService = dataPermissionService;
+        this.operationLogService = operationLogService;
     }
 
     /**
      * 分页查询资产列表
      */
-    @Cacheable(value = "asset:list", key = "#pageNum + '_' + #pageSize + '_' + #status")
     public Result<Map<String, Object>> getAssetList(Integer pageNum, Integer pageSize, Integer status) {
         Page<AssetCard> page = new Page<>(pageNum, pageSize);
-        
+
         LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetCard::getDeleted, 0);
-        
+
         if (status != null) {
             wrapper.eq(AssetCard::getStatus, status);
         }
-        
+
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(null);
+        SysUser currentUser = dataPermissionService.getCurrentUser();
+        if (currentUser != null && !dataPermissionService.isAdmin(currentUser)) {
+            if (scopedDepartmentId == null) {
+                return Result.forbidden("当前用户未绑定部门，无法查看资产列表");
+            }
+            wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
+        }
+
         wrapper.orderByDesc(AssetCard::getCreateTime);
-        
+
         Page<AssetCard> resultPage = assetCardMapper.selectPage(page, wrapper);
-        
+
         Map<String, Object> data = Map.of(
             "list", resultPage.getRecords(),
             "total", resultPage.getTotal(),
@@ -56,17 +70,16 @@ public class AssetService {
     /**
      * 获取当前用户的资产列表（我的资产）
      */
-    @Cacheable(value = "asset:myassets", key = "#userId + '_' + #pageNum + '_' + #pageSize")
     public Result<Map<String, Object>> getMyAssets(Long userId, Integer pageNum, Integer pageSize) {
         Page<AssetCard> page = new Page<>(pageNum, pageSize);
-        
+
         LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetCard::getDeleted, 0);
         wrapper.eq(AssetCard::getUserId, userId);
         wrapper.orderByDesc(AssetCard::getCreateTime);
-        
+
         Page<AssetCard> resultPage = assetCardMapper.selectPage(page, wrapper);
-        
+
         Map<String, Object> data = Map.of(
             "list", resultPage.getRecords(),
             "total", resultPage.getTotal(),
@@ -80,17 +93,21 @@ public class AssetService {
     /**
      * 获取部门资产列表
      */
-    @Cacheable(value = "asset:deptassets", key = "#departmentId + '_' + #pageNum + '_' + #pageSize")
     public Result<Map<String, Object>> getDeptAssets(Long departmentId, Integer pageNum, Integer pageSize) {
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(departmentId);
+        if (dataPermissionService.shouldRestrictToOwnDepartment() && scopedDepartmentId == null) {
+            return Result.forbidden("当前用户未绑定部门，无法查看部门资产");
+        }
+
         Page<AssetCard> page = new Page<>(pageNum, pageSize);
-        
+
         LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AssetCard::getDeleted, 0);
-        wrapper.eq(AssetCard::getDepartmentId, departmentId);
+        wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
         wrapper.orderByDesc(AssetCard::getCreateTime);
-        
+
         Page<AssetCard> resultPage = assetCardMapper.selectPage(page, wrapper);
-        
+
         Map<String, Object> data = Map.of(
             "list", resultPage.getRecords(),
             "total", resultPage.getTotal(),
@@ -104,11 +121,13 @@ public class AssetService {
     /**
      * 根据 ID 查询资产详情
      */
-    @Cacheable(value = "asset:detail", key = "#id")
     public Result<AssetCard> getAssetById(Long id) {
         AssetCard asset = assetCardMapper.selectById(id);
         if (asset == null || asset.getDeleted() == 1) {
             return Result.error("资产不存在");
+        }
+        if (!dataPermissionService.canAccessAsset(asset)) {
+            return Result.forbidden("无权查看该资产");
         }
         return Result.success(asset);
     }
@@ -134,7 +153,9 @@ public class AssetService {
         }
         
         assetCardMapper.insert(asset);
-        return Result.success("资产创建成功", null);
+        Result<Void> result = Result.success("资产创建成功", null);
+        operationLogService.record("ASSET", "CREATE_ASSET", "asset_card", String.valueOf(asset.getId()), "创建资产：" + asset.getAssetCode(), result);
+        return result;
     }
 
     /**
@@ -154,7 +175,9 @@ public class AssetService {
         }
         
         assetCardMapper.updateById(asset);
-        return Result.success("资产更新成功", null);
+        Result<Void> result = Result.success("资产更新成功", null);
+        operationLogService.record("ASSET", "UPDATE_ASSET", "asset_card", String.valueOf(asset.getId()), "更新资产：" + existing.getAssetCode(), result);
+        return result;
     }
 
     /**
@@ -170,18 +193,41 @@ public class AssetService {
         
         asset.setDeleted(1);
         assetCardMapper.updateById(asset);
-        return Result.success("资产删除成功", null);
+        Result<Void> result = Result.success("资产删除成功", null);
+        operationLogService.record("ASSET", "DELETE_ASSET", "asset_card", String.valueOf(asset.getId()), "删除资产：" + asset.getAssetCode(), result);
+        return result;
     }
 
     /**
      * 获取资产统计信息
      */
-    @Cacheable(value = "asset:stats")
     public Result<Map<String, Object>> getStats() {
-        List<AssetCardMapper.StatusCount> statusCounts = assetCardMapper.countByStatus();
-        
-        long total = assetCardMapper.selectCount(new LambdaQueryWrapper<AssetCard>().eq(AssetCard::getDeleted, 0));
-        
+        LambdaQueryWrapper<AssetCard> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AssetCard::getDeleted, 0);
+
+        Long scopedDepartmentId = dataPermissionService.resolveDepartmentScope(null);
+        SysUser currentUser = dataPermissionService.getCurrentUser();
+        if (currentUser != null && !dataPermissionService.isAdmin(currentUser)) {
+            if (scopedDepartmentId == null) {
+                return Result.forbidden("当前用户未绑定部门，无法查看统计信息");
+            }
+            wrapper.eq(AssetCard::getDepartmentId, scopedDepartmentId);
+        }
+
+        List<AssetCard> assets = assetCardMapper.selectList(wrapper);
+        Map<Integer, Long> statusCountMap = assets.stream()
+                .collect(java.util.stream.Collectors.groupingBy(AssetCard::getStatus, java.util.stream.Collectors.counting()));
+        List<AssetCardMapper.StatusCount> statusCounts = statusCountMap.entrySet().stream()
+                .map(entry -> {
+                    AssetCardMapper.StatusCount item = new AssetCardMapper.StatusCount();
+                    item.setStatus(entry.getKey());
+                    item.setCount(entry.getValue());
+                    return item;
+                })
+                .toList();
+
+        long total = assets.size();
+
         Map<String, Object> data = Map.of(
             "total", total,
             "statusCounts", statusCounts

@@ -27,7 +27,7 @@ public class InventoryPlanController {
      * GET /api/inventory/plan/list?pageNum=1&pageSize=10&status=1&planType=2
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:plan')")
     public Result<Map<String, Object>> getPlanList(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -41,7 +41,7 @@ public class InventoryPlanController {
      * GET /api/inventory/plan/{id}
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
+    @PreAuthorize("hasAuthority('inventory:plan')")
     public Result<InventoryPlan> getPlanById(@PathVariable Long id) {
         return inventoryPlanService.getPlanById(id);
     }
@@ -51,7 +51,7 @@ public class InventoryPlanController {
      * POST /api/inventory/plan
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:plan:create')")
     public Result<Void> createPlan(@Valid @RequestBody InventoryPlan plan) {
         return inventoryPlanService.createPlan(plan);
     }
@@ -61,7 +61,7 @@ public class InventoryPlanController {
      * PUT /api/inventory/plan
      */
     @PutMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:plan:edit')")
     public Result<Void> updatePlan(@Valid @RequestBody InventoryPlan plan) {
         return inventoryPlanService.updatePlan(plan);
     }
@@ -71,7 +71,7 @@ public class InventoryPlanController {
      * DELETE /api/inventory/plan/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('inventory:plan:delete')")
     public Result<Void> deletePlan(@PathVariable Long id) {
         return inventoryPlanService.deletePlan(id);
     }
@@ -81,7 +81,7 @@ public class InventoryPlanController {
      * POST /api/inventory/plan/{id}/enable
      */
     @PostMapping("/{id}/enable")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:plan:enable')")
     public Result<Void> enablePlan(@PathVariable Long id) {
         return inventoryPlanService.enablePlan(id);
     }
@@ -91,7 +91,7 @@ public class InventoryPlanController {
      * POST /api/inventory/plan/{id}/disable
      */
     @PostMapping("/{id}/disable")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:plan:disable')")
     public Result<Void> disablePlan(@PathVariable Long id) {
         return inventoryPlanService.disablePlan(id);
     }
@@ -101,7 +101,7 @@ public class InventoryPlanController {
      * POST /api/inventory/plan/{id}/execute
      */
     @PostMapping("/{id}/execute")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    @PreAuthorize("hasAuthority('inventory:plan:execute')")
     public Result<Void> executePlan(@PathVariable Long id) {
         return inventoryPlanService.executePlan(id);
     }

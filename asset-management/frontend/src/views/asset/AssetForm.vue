@@ -17,25 +17,70 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="资产名称" prop="assetName">
-              <el-input v-model="form.assetName" placeholder="请输入资产名称" />
+              <el-select
+                v-model="form.assetName"
+                placeholder="请选择资产主数据"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+                style="width: 100%"
+                @change="handleAssetMasterChange"
+              >
+                <el-option
+                  v-for="item in assetMasterList"
+                  :key="item.id"
+                  :label="formatAssetMasterLabel(item)"
+                  :value="item.assetName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="规格型号" prop="specification">
-              <el-input v-model="form.specification" placeholder="请输入规格型号" />
+              <el-input v-model="form.specification" placeholder="选择主数据后可自动带出" />
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row :gutter="20">
           <el-col :span="12">
+            <el-form-item label="分类名称">
+              <el-input v-model="form.categoryName" placeholder="选择主数据后可自动带出" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="单位" prop="unit">
               <el-input v-model="form.unit" placeholder="如：台、件、套" style="width: 150px;" />
             </el-form-item>
           </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="数量" prop="quantity">
               <el-input-number v-model="form.quantity" :min="1" style="width: 150px;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="供应商">
+              <el-select
+                v-model="form.supplierName"
+                placeholder="请选择供应商"
+                clearable
+                filterable
+                allow-create
+                default-first-option
+                style="width: 100%"
+                @change="handleSupplierChange"
+              >
+                <el-option
+                  v-for="item in supplierList"
+                  :key="item.id"
+                  :label="item.supplierName"
+                  :value="item.supplierName"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -95,21 +140,28 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getAssetById, createAsset, updateAsset } from '@/api/asset'
+import { getEnabledAssetMasterList, getEnabledSupplierList } from '@/api/basic'
 
 const route = useRoute()
 const router = useRouter()
 const formRef = ref(null)
 const submitting = ref(false)
 const isEdit = ref(false)
+const assetMasterList = ref([])
+const supplierList = ref([])
 
 const form = reactive({
   assetName: '',
   specification: '',
+  categoryId: null,
+  categoryName: '',
   unit: '台',
   quantity: 1,
   unitPrice: 0,
   purchaseDate: '',
   expectedUseYears: 5,
+  supplierName: '',
+  contactPhone: '',
   remark: ''
 })
 
@@ -122,6 +174,70 @@ const rules = {
 const totalAmount = computed(() => {
   return ((form.unitPrice || 0) * (form.quantity || 0)).toFixed(2)
 })
+
+const loadBaseOptions = async () => {
+  try {
+    const [assetMasterRes, supplierRes] = await Promise.all([
+      getEnabledAssetMasterList(),
+      getEnabledSupplierList()
+    ])
+    if (assetMasterRes.code === 200) {
+      assetMasterList.value = assetMasterRes.data || []
+    }
+    if (supplierRes.code === 200) {
+      supplierList.value = supplierRes.data || []
+    }
+  } catch (error) {
+    console.error('加载基础主数据失败', error)
+  }
+}
+
+const handleAssetMasterChange = (value) => {
+  const assetMaster = assetMasterList.value.find(item => item.assetName === value)
+  if (!assetMaster) {
+    if (!value) {
+      form.specification = ''
+      form.categoryId = null
+      form.categoryName = ''
+    }
+    return
+  }
+
+  form.assetName = assetMaster.assetName
+  form.specification = assetMaster.specification || ''
+  form.categoryId = assetMaster.categoryId || null
+  form.categoryName = assetMaster.categoryName || ''
+  form.unit = assetMaster.unit || form.unit
+
+  if (assetMaster.defaultPrice !== null && assetMaster.defaultPrice !== undefined) {
+    form.unitPrice = Number(assetMaster.defaultPrice)
+  }
+  if (assetMaster.useLifeMonths) {
+    form.expectedUseYears = Math.max(1, Math.ceil(Number(assetMaster.useLifeMonths) / 12))
+  }
+}
+
+const handleSupplierChange = (value) => {
+  const supplier = supplierList.value.find(item => item.supplierName === value)
+  if (!supplier) {
+    if (!value) {
+      form.contactPhone = ''
+    }
+    return
+  }
+  form.contactPhone = supplier.contactPhone || ''
+}
+
+const formatAssetMasterLabel = (item) => {
+  const parts = [item.assetName]
+  if (item.specification) {
+    parts.push(item.specification)
+  }
+  if (item.categoryName) {
+    parts.push(item.categoryName)
+  }
+  return parts.join(' / ')
+}
 
 const handleSubmit = async () => {
   if (!formRef.value) return
@@ -159,6 +275,7 @@ const loadAsset = async () => {
 }
 
 onMounted(() => {
+  loadBaseOptions()
   if (route.params.id) {
     loadAsset()
   }

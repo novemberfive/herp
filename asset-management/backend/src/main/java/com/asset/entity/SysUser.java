@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用户实体类
@@ -64,6 +65,18 @@ public class SysUser implements Serializable {
      */
     @TableField("role")
     private String role;
+
+    /**
+     * 角色名称（冗余展示）
+     */
+    @TableField(exist = false)
+    private String roleName;
+
+    /**
+     * 当前用户权限列表（运行时计算）
+     */
+    @TableField(exist = false)
+    private List<String> permissions;
 
     /**
      * 状态：0-禁用，1-正常
