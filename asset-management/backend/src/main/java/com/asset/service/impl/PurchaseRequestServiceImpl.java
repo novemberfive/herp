@@ -123,11 +123,13 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     @Transactional(rollbackFor = Exception.class)
     public Result<Void> delete(Long id) {
         PurchaseRequest request = purchaseRequestRepository.selectById(id);
-        if (request == null || request.getDeleted() == 1) {
+        if (request == null || Integer.valueOf(1).equals(request.getDeleted())) {
             return Result.error("采购申请不存在");
         }
-        request.setDeleted(1);
-        purchaseRequestRepository.updateById(request);
+        int rows = purchaseRequestRepository.deleteById(id);
+        if (rows <= 0) {
+            return Result.error("采购申请删除失败");
+        }
         Result<Void> result = Result.success("采购申请删除成功", null);
         operationLogService.record("ACQUISITION", "DELETE_PURCHASE_REQUEST", "purchase_request",
             String.valueOf(request.getId()), "删除采购申请：" + request.getRequestNo(), result);

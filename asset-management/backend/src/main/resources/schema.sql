@@ -266,7 +266,7 @@ INSERT INTO sys_role (role_name, role_code, status, permissions, sort_order, rem
 
 -- 插入默认管理员账户（密码：admin123）
 INSERT INTO sys_user (username, password, real_name, role, status) 
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', '系统管理员', 'admin', 1);
+VALUES ('admin', '$2a$10$d4rkeMBlNYfKTvxdIXg5d.nRyEEvnc6x.QJsQZCjhL5EqO92Vkeri', '系统管理员', 'admin', 1);
 
 -- 插入示例部门数据
 INSERT INTO sys_department (parent_id, dept_name, dept_code, leader_name, phone, status, level, sort_order) VALUES
@@ -425,6 +425,96 @@ CREATE TABLE asset_storage (
     INDEX idx_storage_type (storage_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产入库表';
 
+-- 资产领用退库表
+DROP TABLE IF EXISTS asset_requisition;
+CREATE TABLE asset_requisition (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    requisition_no VARCHAR(50) NOT NULL UNIQUE COMMENT '领用退库单号',
+    business_type TINYINT NOT NULL COMMENT '业务类型：1-领用，2-退库',
+    asset_id BIGINT COMMENT '资产 ID',
+    asset_code VARCHAR(50) COMMENT '资产编码',
+    asset_name VARCHAR(100) COMMENT '资产名称',
+    specification VARCHAR(100) COMMENT '规格型号',
+    category_id BIGINT COMMENT '分类 ID',
+    category_name VARCHAR(100) COMMENT '分类名称',
+    quantity INT DEFAULT 1 COMMENT '数量',
+    unit_price DECIMAL(10,2) COMMENT '单价',
+    total_amount DECIMAL(10,2) COMMENT '总金额',
+    original_department_id BIGINT COMMENT '原部门 ID',
+    original_department_name VARCHAR(100) COMMENT '原部门名称',
+    original_keeper_id BIGINT COMMENT '原保管人 ID',
+    original_keeper_name VARCHAR(50) COMMENT '原保管人姓名',
+    new_department_id BIGINT COMMENT '新部门 ID',
+    new_department_name VARCHAR(100) COMMENT '新部门名称',
+    new_keeper_id BIGINT COMMENT '新保管人 ID',
+    new_keeper_name VARCHAR(50) COMMENT '新保管人姓名',
+    requisition_date DATETIME COMMENT '领用退库日期',
+    expected_return_date DATETIME COMMENT '预计归还日期',
+    actual_return_date DATETIME COMMENT '实际归还日期',
+    reason VARCHAR(500) COMMENT '原因',
+    remark VARCHAR(500) COMMENT '备注',
+    status TINYINT DEFAULT 0 COMMENT '审批状态：0-草稿，1-待审批，2-审批通过，3-审批拒绝，4-已完成',
+    approver_id BIGINT COMMENT '审批人 ID',
+    approver_name VARCHAR(50) COMMENT '审批人姓名',
+    approve_time DATETIME COMMENT '审批时间',
+    approve_opinion VARCHAR(500) COMMENT '审批意见',
+    create_by BIGINT COMMENT '创建人 ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_by BIGINT COMMENT '更新人 ID',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_requisition_no (requisition_no),
+    INDEX idx_asset_code (asset_code),
+    INDEX idx_business_type (business_type),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产领用退库表';
+
+-- 资产附件表
+DROP TABLE IF EXISTS asset_attachment;
+CREATE TABLE asset_attachment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    asset_id BIGINT COMMENT '资产 ID',
+    asset_code VARCHAR(50) COMMENT '资产编码',
+    asset_name VARCHAR(100) COMMENT '资产名称',
+    attachment_name VARCHAR(200) NOT NULL COMMENT '附件名称',
+    attachment_type TINYINT DEFAULT 7 COMMENT '附件类型：1-采购合同，2-验收报告，3-维修记录，4-保养记录，5-转移单，6-报废单，7-其他',
+    file_name VARCHAR(200) COMMENT '原始文件名',
+    file_path VARCHAR(500) COMMENT '服务端文件路径',
+    file_url VARCHAR(500) COMMENT '访问地址',
+    file_size BIGINT COMMENT '文件大小',
+    upload_user VARCHAR(50) COMMENT '上传人',
+    upload_time DATETIME COMMENT '上传时间',
+    remark VARCHAR(500) COMMENT '备注',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_asset_id (asset_id),
+    INDEX idx_asset_code (asset_code),
+    INDEX idx_attachment_type (attachment_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产附件表';
+
+-- 资产变更记录表
+DROP TABLE IF EXISTS asset_change_record;
+CREATE TABLE asset_change_record (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键 ID',
+    asset_id BIGINT COMMENT '资产 ID',
+    asset_code VARCHAR(50) COMMENT '资产编码',
+    asset_name VARCHAR(100) COMMENT '资产名称',
+    change_type TINYINT NOT NULL COMMENT '变更类型：1-信息变更，2-部门调拨，3-位置变更，4-使用人变更，5-状态变更，6-其他',
+    change_field VARCHAR(100) COMMENT '变更字段',
+    before_value VARCHAR(500) COMMENT '变更前',
+    after_value VARCHAR(500) COMMENT '变更后',
+    change_reason VARCHAR(500) COMMENT '变更原因',
+    operator_name VARCHAR(50) COMMENT '操作人',
+    operate_time DATETIME COMMENT '操作时间',
+    remark VARCHAR(500) COMMENT '备注',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    INDEX idx_asset_id (asset_id),
+    INDEX idx_asset_code (asset_code),
+    INDEX idx_change_type (change_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产变更记录表';
 -- 资产调拨表
 DROP TABLE IF EXISTS asset_transfer;
 CREATE TABLE asset_transfer (
@@ -673,3 +763,31 @@ CREATE TABLE asset_borrow (
     INDEX idx_expected_return_date (expected_return_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产借用登记表';
 
+
+-- 插入演示资产卡片数据
+INSERT INTO asset_card (asset_code, asset_name, specification, category_id, unit, quantity, unit_price, total_amount, location_id, department_id, user_id, status, purchase_date, enable_date, expected_use_years, depreciation_method, accumulated_depreciation, net_value, supplier_name, contact_person, contact_phone, warranty_period, warranty_end_date, remark, create_by, create_time, deleted) VALUES
+('AST-DEMO-001', '便携式彩超仪', 'SonoBook Pro', 1, '台', 1, 128000.00, 128000.00, 3, 4, 1, 1, '2025-01-15', '2025-02-01', 60, 1, 12800.00, 115200.00, '华东医疗设备有限公司', '孙经理', '021-20000001', 36, '2028-01-15', '演示资产：设备科在用医疗设备', 1, DATE_SUB(NOW(), INTERVAL 5 MONTH), 0),
+('AST-DEMO-002', '门诊自助终端', 'Kiosk-M8', 1, '台', 2, 26000.00, 52000.00, 1, 2, 1, 0, '2025-04-10', '2025-04-20', 48, 1, 2600.00, 49400.00, '北辰信息系统集成有限公司', '何工', '010-20000003', 24, '2027-04-10', '演示资产：待分配自助设备', 1, DATE_SUB(NOW(), INTERVAL 2 MONTH), 0),
+('AST-DEMO-003', '会议室投影系统', 'Epson CB-L260', 1, '套', 1, 18500.00, 18500.00, 6, 1, 1, 6, '2024-11-08', '2024-11-20', 48, 1, 3083.33, 15416.67, '星海办公科技有限公司', '郑女士', '021-20000002', 24, '2026-11-08', '演示资产：借出给培训会议使用', 1, DATE_SUB(NOW(), INTERVAL 7 MONTH), 0),
+('AST-DEMO-004', '护士站办公椅', 'Ergo-Care A2', 2, '把', 12, 680.00, 8160.00, 5, 3, 1, 1, '2024-09-01', '2024-09-10', 36, 1, 1813.33, 6346.67, '星海办公科技有限公司', '郑女士', '021-20000002', 12, '2025-09-01', '演示资产：财务科批量办公家具', 1, DATE_SUB(NOW(), INTERVAL 9 MONTH), 0),
+('AST-DEMO-005', '药房冷藏柜', 'YC-395L', 3, '台', 1, 9200.00, 9200.00, 4, 4, 1, 2, '2024-06-18', '2024-07-01', 60, 1, 2913.33, 6286.67, '华东医疗设备有限公司', '孙经理', '021-20000001', 24, '2026-06-18', '演示资产：维修中冷链设备', 1, DATE_SUB(NOW(), INTERVAL 12 MONTH), 0);
+
+-- 插入演示领用退库数据
+INSERT INTO asset_requisition (requisition_no, business_type, asset_id, asset_code, asset_name, specification, category_id, category_name, quantity, unit_price, total_amount, original_department_id, original_department_name, original_keeper_id, original_keeper_name, new_department_id, new_department_name, new_keeper_id, new_keeper_name, requisition_date, expected_return_date, actual_return_date, reason, remark, status, approver_id, approver_name, approve_time, approve_opinion, create_by, create_time, deleted) VALUES
+('RQ-DEMO-001', 1, (SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-003'), 'AST-DEMO-003', '会议室投影系统', 'Epson CB-L260', 1, '电子设备', 1, 18500.00, 18500.00, 1, '院办公室', 1, '系统管理员', 2, '信息科', 1, '系统管理员', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_ADD(NOW(), INTERVAL 20 DAY), NULL, '培训会议临时领用投影设备', '演示数据：已审批借用', 2, 1, 'admin', DATE_SUB(NOW(), INTERVAL 9 DAY), '同意领用，请按期归还', 1, DATE_SUB(NOW(), INTERVAL 10 DAY), 0),
+('RQ-DEMO-002', 2, (SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-002'), 'AST-DEMO-002', '门诊自助终端', 'Kiosk-M8', 1, '电子设备', 1, 26000.00, 26000.00, 2, '信息科', 1, '系统管理员', 4, '设备科', 1, '系统管理员', DATE_SUB(NOW(), INTERVAL 4 DAY), NULL, DATE_SUB(NOW(), INTERVAL 3 DAY), '测试完成后退回设备科库房', '演示数据：退库草稿', 0, NULL, NULL, NULL, NULL, 1, DATE_SUB(NOW(), INTERVAL 4 DAY), 0);
+
+-- 插入演示附件数据
+INSERT INTO asset_attachment (asset_id, asset_code, asset_name, attachment_name, attachment_type, file_name, file_path, file_url, file_size, upload_user, upload_time, remark, deleted) VALUES
+((SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-001'), 'AST-DEMO-001', '便携式彩超仪', '便携式彩超仪采购合同.pdf', 1, '便携式彩超仪采购合同.pdf', NULL, NULL, 245760, 'admin', DATE_SUB(NOW(), INTERVAL 4 MONTH), '演示附件：采购合同元数据', 0),
+((SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-005'), 'AST-DEMO-005', '药房冷藏柜', '药房冷藏柜维修记录.docx', 3, '药房冷藏柜维修记录.docx', NULL, NULL, 98304, 'admin', DATE_SUB(NOW(), INTERVAL 12 DAY), '演示附件：维修记录元数据', 0);
+
+-- 插入演示变更记录数据
+INSERT INTO asset_change_record (asset_id, asset_code, asset_name, change_type, change_field, before_value, after_value, change_reason, operator_name, operate_time, remark, deleted) VALUES
+((SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-001'), 'AST-DEMO-001', '便携式彩超仪', 2, 'departmentName', '信息科', '设备科', '设备统一归口管理', 'admin', DATE_SUB(NOW(), INTERVAL 3 MONTH), '演示变更：部门调拨', 0),
+((SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-003'), 'AST-DEMO-003', '会议室投影系统', 5, 'status', '在用', '借出', '培训会议临时借用', 'admin', DATE_SUB(NOW(), INTERVAL 9 DAY), '演示变更：状态变化', 0),
+((SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-005'), 'AST-DEMO-005', '药房冷藏柜', 5, 'status', '在用', '维修中', '温控异常送修', 'admin', DATE_SUB(NOW(), INTERVAL 12 DAY), '演示变更：维修状态', 0);
+
+-- 插入演示处置数据
+INSERT INTO asset_disposal (disposal_no, asset_id, asset_code, asset_name, specification, category_id, category_name, original_value, accumulated_depreciation, net_value, purchase_date, enable_date, expected_use_years, used_years, disposal_type, disposal_reason, disposal_method, estimated_value, actual_value, buyer_name, buyer_contact, applicant_id, applicant_name, department_id, department_name, apply_time, approver_id, approver_name, approve_time, approve_status, approve_remark, disposal_status, complete_time, remark, create_by, create_time, deleted) VALUES
+('DP-DEMO-001', (SELECT id FROM asset_card WHERE asset_code = 'AST-DEMO-004'), 'AST-DEMO-004', '护士站办公椅', 'Ergo-Care A2', 2, '办公家具', 8160.00, 1813.33, 6346.67, '2024-09-01', '2024-09-10', 36, 9, 1, '部分椅面破损，达到报废标准', 3, 1200.00, 980.00, '本地回收单位', '周经理', 1, '系统管理员', 3, '财务科', DATE_SUB(NOW(), INTERVAL 20 DAY), 1, 'admin', DATE_SUB(NOW(), INTERVAL 18 DAY), 1, '同意按流程报废', 2, DATE_SUB(NOW(), INTERVAL 15 DAY), '演示数据：已完成报废处置', 1, DATE_SUB(NOW(), INTERVAL 20 DAY), 0);

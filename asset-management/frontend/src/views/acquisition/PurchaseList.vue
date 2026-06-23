@@ -399,6 +399,19 @@ const formatAssetMasterLabel = (item) => {
   return parts.join(' / ')
 }
 
+const toDateTimeValue = (value) => {
+  if (!value) return null
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return `${value}T00:00:00`
+  }
+  return value
+}
+
+const toDatePickerValue = (value) => {
+  if (!value) return ''
+  return String(value).split('T')[0].split(' ')[0]
+}
+
 const handleSubmitForm = async () => {
   try {
     const data = {
@@ -411,7 +424,7 @@ const handleSubmitForm = async () => {
       estimatedTotal: formData.estimatedPrice ? formData.estimatedPrice * formData.quantity : null,
       departmentId: formData.departmentId,
       departmentName: formData.departmentName,
-      expectedDeliveryDate: formData.expectedDeliveryDate || null,
+      expectedDeliveryDate: toDateTimeValue(formData.expectedDeliveryDate),
       purchaseReason: formData.purchaseReason,
       remark: formData.remark
     }
@@ -457,7 +470,7 @@ const handleEdit = async (row) => {
       formData.estimatedPrice = data.estimatedPrice
       formData.departmentId = data.departmentId
       formData.departmentName = data.departmentName
-      formData.expectedDeliveryDate = data.expectedDeliveryDate
+      formData.expectedDeliveryDate = toDatePickerValue(data.expectedDeliveryDate)
       formData.purchaseReason = data.purchaseReason
       formData.remark = data.remark
       formDialogVisible.value = true

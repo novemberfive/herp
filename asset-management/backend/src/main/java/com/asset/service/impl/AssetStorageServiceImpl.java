@@ -2,7 +2,9 @@ package com.asset.service.impl;
 
 import com.asset.dto.PageResult;
 import com.asset.dto.Result;
+import com.asset.entity.AssetAcceptance;
 import com.asset.entity.AssetStorage;
+import com.asset.repository.AssetAcceptanceRepository;
 import com.asset.repository.AssetStorageRepository;
 import com.asset.service.AssetStorageService;
 import com.asset.service.DataPermissionService;
@@ -22,13 +24,16 @@ import java.util.UUID;
 public class AssetStorageServiceImpl implements AssetStorageService {
     
     private final AssetStorageRepository assetStorageRepository;
+    private final AssetAcceptanceRepository assetAcceptanceRepository;
     private final DataPermissionService dataPermissionService;
     private final OperationLogService operationLogService;
     
     public AssetStorageServiceImpl(AssetStorageRepository assetStorageRepository,
+                                   AssetAcceptanceRepository assetAcceptanceRepository,
                                    DataPermissionService dataPermissionService,
                                    OperationLogService operationLogService) {
         this.assetStorageRepository = assetStorageRepository;
+        this.assetAcceptanceRepository = assetAcceptanceRepository;
         this.dataPermissionService = dataPermissionService;
         this.operationLogService = operationLogService;
     }
@@ -154,15 +159,34 @@ public class AssetStorageServiceImpl implements AssetStorageService {
             return Result.error("该记录已经入库");
         }
         
+        LocalDateTime now = LocalDateTime.now();
         storage.setStatus(1); // 已入库
-        storage.setUpdateTime(LocalDateTime.now());
+        storage.setUpdateTime(now);
         assetStorageRepository.updateById(storage);
+        markAcceptanceStored(storage, now);
         Result<Void> result = Result.success("资产入库确认成功", null);
         operationLogService.record("ACQUISITION", "CONFIRM_STORAGE", "asset_storage",
             String.valueOf(storage.getId()), "确认入库：" + storage.getStorageNo(), result);
         return result;
     }
     
+    private void markAcceptanceStored(AssetStorage storage, LocalDateTime now) {
+        AssetAcceptance acceptance = null;
+        if (storage.getAcceptanceId() != null) {
+            acceptance = assetAcceptanceRepository.selectById(storage.getAcceptanceId());
+        }
+        if (acceptance == null && storage.getAcceptanceNo() != null && !storage.getAcceptanceNo().isEmpty()) {
+            acceptance = assetAcceptanceRepository.selectOne(new LambdaQueryWrapper<AssetAcceptance>()
+                .eq(AssetAcceptance::getAcceptanceNo, storage.getAcceptanceNo())
+                .eq(AssetAcceptance::getDeleted, 0));
+        }
+        if (acceptance != null && !Integer.valueOf(1).equals(acceptance.getStorageStatus())) {
+            acceptance.setStorageStatus(1);
+            acceptance.setUpdateTime(now);
+            assetAcceptanceRepository.updateById(acceptance);
+        }
+    }
+
     private String generateStorageNo() {
         return "ST" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) 
                + UUID.randomUUID().toString().substring(0, 4).toUpperCase();

@@ -24,7 +24,7 @@
         <el-form-item label="部门">
           <el-select v-model="filterForm.departmentId" placeholder="请选择部门" clearable style="width: 180px">
             <el-option label="全部部门" :value="null" />
-            <el-option v-for="dept in departmentList" :key="dept.id" :label="dept.name" :value="dept.id" />
+            <el-option v-for="dept in departmentList" :key="dept.id" :label="dept.deptName || dept.name" :value="dept.id" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -145,7 +145,7 @@
     </el-row>
 
     <!-- 加载状态 -->
-    <div v-loading="loading" class="loading-overlay" />
+    <div v-if="loading" v-loading="loading" class="loading-overlay" />
   </div>
 </template>
 
@@ -153,7 +153,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, Refresh, Document, Money, CircleCheck, User, Download } from '@element-plus/icons-vue'
-import { use } from 'echarts/core'
+import { use, graphic } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart, BarChart, LineChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components'
@@ -175,6 +175,10 @@ const filterForm = reactive({
 const statistics = ref({})
 const loading = ref(false)
 const departmentList = ref([])
+
+const getTopEntries = (counts) => Object.entries(counts || {})
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
 
 // 图表选项
 const statusChartOption = computed(() => ({
@@ -244,7 +248,7 @@ const trendChartOption = computed(() => ({
       smooth: true,
       data: (statistics.value.trendData || []).map(item => item.count),
       areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
           { offset: 0, color: 'rgba(64, 158, 255, 0.5)' },
           { offset: 1, color: 'rgba(64, 158, 255, 0.05)' }
         ])
@@ -277,15 +281,15 @@ const categoryChartOption = computed(() => ({
   },
   yAxis: {
     type: 'category',
-    data: []
+    data: getTopEntries(statistics.value.categoryCounts).map(([key]) => '分类' + key)
   },
   series: [
     {
       name: '资产数量',
       type: 'bar',
-      data: [],
+      data: getTopEntries(statistics.value.categoryCounts).map(([, value]) => value),
       itemStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+        color: new graphic.LinearGradient(0, 0, 1, 0, [
           { offset: 0, color: '#83bff6' },
           { offset: 0.5, color: '#188df0' },
           { offset: 1, color: '#188df0' }
@@ -313,15 +317,15 @@ const departmentChartOption = computed(() => ({
   },
   yAxis: {
     type: 'category',
-    data: []
+    data: getTopEntries(statistics.value.departmentCounts).map(([key]) => '部门' + key)
   },
   series: [
     {
       name: '资产数量',
       type: 'bar',
-      data: [],
+      data: getTopEntries(statistics.value.departmentCounts).map(([, value]) => value),
       itemStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+        color: new graphic.LinearGradient(0, 0, 1, 0, [
           { offset: 0, color: '#f687b3' },
           { offset: 0.5, color: '#f05c8a' },
           { offset: 1, color: '#e02e6a' }
@@ -362,24 +366,6 @@ const fetchStatistics = async () => {
     const res = await getStatisticsReport(params)
     if (res.code === 200) {
       statistics.value = res.data
-      
-      // 更新分类图表数据（简化处理，使用 ID）
-      if (res.data.categoryCounts) {
-        const entries = Object.entries(res.data.categoryCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10)
-        categoryChartOption.value.yAxis.data = entries.map(e => `分类${e[0]}`)
-        categoryChartOption.value.series[0].data = entries.map(e => e[1])
-      }
-      
-      // 更新部门图表数据（简化处理，使用 ID）
-      if (res.data.departmentCounts) {
-        const entries = Object.entries(res.data.departmentCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 10)
-        departmentChartOption.value.yAxis.data = entries.map(e => `部门${e[0]}`)
-        departmentChartOption.value.series[0].data = entries.map(e => e[1])
-      }
     } else {
       ElMessage.error(res.message || '获取统计数据失败')
     }
