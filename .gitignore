@@ -1,6 +1,7 @@
 # Project-specific ignores
 asset-management/frontend/node_modules/
 asset-management/frontend/dist/
+.deploy-local/
 
 # Dependencies
 node_modules/
